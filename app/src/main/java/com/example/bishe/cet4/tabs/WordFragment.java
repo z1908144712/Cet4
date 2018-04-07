@@ -1,8 +1,7 @@
 package com.example.bishe.cet4.tabs;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -40,10 +38,12 @@ public class WordFragment extends Fragment{
     private TextView textView_phonetic;
     private TextView textView_chinese;
     private ExampleList listView_example;
-    private Button button_change;
+    private TextView textView_word_num;
     private SQLiteDatabase db;
     private int myChoice=0;
     private static GestureDetector gestureDetector;
+    private int words_num[];
+    private DBHelper dbHelper;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -51,27 +51,22 @@ public class WordFragment extends Fragment{
         initViews(view);
         initEvents(view);
         initDatabase();
-        initData(myChoice);
+        initData();
         return view;
     }
     private void initDatabase(){
         AssetsDatabaseManager assetsDatabaseManager=AssetsDatabaseManager.getAssetsDatabaseManager();
         db=assetsDatabaseManager.getDatabase("dict.db");
+        dbHelper=new DBHelper(db);
     }
     private void initViews(View view){
         textView_english=view.findViewById(R.id.word_english);
         textView_chinese=view.findViewById(R.id.word_chinese);
         textView_phonetic=view.findViewById(R.id.word_phonetic);
         listView_example=(ExampleList) view.findViewById(R.id.word_examples_list);
-        button_change=view.findViewById(R.id.word_change);
+        textView_word_num=view.findViewById(R.id.word_index);
     }
     private void initEvents(final View view){
-        button_change.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSingleChoiceDialog(view);
-            }
-        });
         //设置手势检测器
         gestureDetector=new GestureDetector(getContext(),new GestureEvent());
         //设置手势监听器
@@ -89,12 +84,23 @@ public class WordFragment extends Fragment{
                 return false;
             }
         });
-
     }
-    public void initData(int id){
+    public void initData(){
         DBHelper dbHelper=new DBHelper(db);
-        List list=dbHelper.selectById(db,id);
-        Word word=(Word) list.get(0);
+        SharedPreferences sharedPreferences=getActivity().getSharedPreferences("plandays",Context.MODE_PRIVATE);
+        String previous_time=sharedPreferences.getString("previous_time",null);
+        String words_num_str=dbHelper.selectedByTime(previous_time);
+        String []words_num_strs=words_num_str.split(",");
+        words_num=new int[words_num_strs.length];
+        for (int i=0;i<words_num.length;i++){
+            words_num[i]=Integer.parseInt(words_num_strs[i]);
+        }
+        showWord(0);
+    }
+    private void showWord(int id){
+        textView_word_num.setText((id+1)+"/"+words_num.length);
+        List list=dbHelper.selectWordById(words_num[id]);
+        Word word=(Word)list.get(0);
         textView_english.setText(word.getEnglish());
         textView_chinese.setText("");
         String chineses[]=word.getChinese().split("#");
@@ -116,27 +122,6 @@ public class WordFragment extends Fragment{
             example_list.add(map);
         }
         listView_example.setAdapter(new SimpleAdapter(getContext(),example_list,R.layout.word_examples_list_layout,new String[]{"id","english","chinese"},new int[]{R.id.word_example_list_id,R.id.word_example_list_english,R.id.word_example_list_chinese}));
-    }
-
-    private void showSingleChoiceDialog(View view){
-        final String []items=new String[1000];
-        for(int i=0;i<1000;i++){
-            items[i]=String.valueOf(i);
-        }
-        AlertDialog.Builder aBuilder=new AlertDialog.Builder(view.getContext());
-        aBuilder.setSingleChoiceItems(items, myChoice, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                myChoice=which;
-            }
-        });
-        aBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                initData(Integer.parseInt(items[myChoice]));
-            }
-        });
-        aBuilder.show();
     }
 
     class GestureEvent implements GestureDetector.OnGestureListener{
@@ -174,17 +159,17 @@ public class WordFragment extends Fragment{
                     myChoice--;
                     Animation animation= AnimationUtils.loadAnimation(getContext(),R.anim.anim_revert);
                     getView().startAnimation(animation);
-                    initData(myChoice);
+                    showWord(myChoice);
                 }else{
                     Toast.makeText(getContext(),"已经是第一个了~",Toast.LENGTH_SHORT).show();
                 }
             }else if((e1.getX()-e2.getX())>200&&Math.abs(velocityX)>50){
                 //向右滑动
-                if(myChoice<999){
+                if(myChoice<words_num.length-1){
                     myChoice++;
                     Animation animation= AnimationUtils.loadAnimation(getContext(),R.anim.anim_next);
                     getView().startAnimation(animation);
-                    initData(myChoice);
+                    showWord(myChoice);
                 }else{
                     Toast.makeText(getContext(),"已经是最后一个了~",Toast.LENGTH_SHORT).show();
                 }

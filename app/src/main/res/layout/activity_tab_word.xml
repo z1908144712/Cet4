@@ -10,15 +10,14 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center">
-            <Button
-                android:id="@+id/word_change"
+            <TextView
+                android:id="@+id/word_index"
                 android:layout_width="120px"
                 android:layout_height="120px"
                 android:layout_gravity="right"
                 android:layout_marginRight="20px"
                 android:layout_marginTop="20px"
                 android:textColor="#000000"
-                android:text="C"
                 />
             <TextView
                 android:id="@+id/word_english"
