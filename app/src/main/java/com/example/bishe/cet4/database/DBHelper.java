@@ -60,6 +60,15 @@ public class DBHelper {
         cursor.close();
         return count;
     }
+
+    public String select_words_plan_byId(int id){
+        Cursor cursor=db.rawQuery("select words_num from words_plan where id=?",new String[]{String.valueOf(id)});
+        cursor.moveToNext();
+        String res=cursor.getString(0);
+        cursor.close();
+        return res;
+    }
+
     public String selectAllLearnWordNum(){
         String words_num_str="";
         Cursor cursor=db.rawQuery("select words_num from words_plan",null);

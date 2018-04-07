@@ -4,6 +4,7 @@ package com.example.bishe.cet4.tabs;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,6 +18,7 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.example.bishe.cet4.R;
+import com.example.bishe.cet4.activity.TestActivity;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 
@@ -89,7 +91,11 @@ public class TestFragment extends Fragment {
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getContext(),">>>"+position,Toast.LENGTH_SHORT).show();
+                                Intent intent=new Intent();
+                                intent.putExtra("id",position);
+                                intent.putExtra("count",count);
+                                intent.setClass(getContext(), TestActivity.class);
+                                startActivity(intent);
                             }
                         })
                         .create()
