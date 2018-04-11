@@ -9,6 +9,7 @@
         android:layout_height="50dp"
         android:background="#303F9F"
         android:text="  学习进度"
+        android:textSize="18sp"
         android:textColor="#ffffff"
         android:gravity="center_vertical"
         android:drawableLeft="@drawable/ic_keyboard_arrow_left"/>

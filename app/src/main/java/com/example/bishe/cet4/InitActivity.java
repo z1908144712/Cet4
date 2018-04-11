@@ -53,7 +53,6 @@ public class InitActivity extends Activity implements View.OnClickListener{
         }else{
             init();
         }
-
     }
 
     private void init(){

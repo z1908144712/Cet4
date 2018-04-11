@@ -1,6 +1,7 @@
 package com.example.bishe.cet4.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -28,16 +29,12 @@ public class RateOfLearningActivity extends Activity {
     private ExpandableListView expandableListView=null;
     private List<String> groupName=null;
     private List<List<Map<String,String>>> childContext=null;
-    private SQLiteDatabase db=null;
-    private DBHelper dbHelper=null;
     private TextView textView_title=null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rate_of_learning_layout);
-        //初始化数据库
-        initDataBase();
         //初始化数据
         initData();
         //初始化控件
@@ -46,10 +43,11 @@ public class RateOfLearningActivity extends Activity {
         initEvents();
     }
 
-    private void initDataBase(){
-        AssetsDatabaseManager assetsDatabaseManager=AssetsDatabaseManager.getAssetsDatabaseManager();
-        db=assetsDatabaseManager.getDatabase("dict.db");
-        dbHelper=new DBHelper(db);
+    private void initData(){
+        Intent intent=getIntent();
+        Bundle bundle=intent.getBundleExtra("RateOfLearning");
+        groupName= (List<String>) bundle.getSerializable("groupName");
+        childContext= (List<List<Map<String, String>>>) bundle.getSerializable("childContext");
     }
 
     private void initViews(){
@@ -79,66 +77,6 @@ public class RateOfLearningActivity extends Activity {
         });
     }
 
-    private void initData(){
-        groupName=new ArrayList<>();
-        childContext=new ArrayList<>();
-        List<String> learn_word=dbHelper.selectAllLearnWord();
-        String []learned_word_num_array;
-        List<Map<String,String>> childs;
-        //已学习
-        if(learn_word.size()>1){                        //除今天以外的数据
-            for(int i=0;i<learn_word.size()-1;i++){
-                learned_word_num_array=learn_word.get(i).split(",");
-                childs=new ArrayList();
-                for(int j=0;j<learned_word_num_array.length;j++){
-                    Map map=new HashMap();
-                    map.put("id",learned_word_num_array[j]);
-                    map.put("english",dbHelper.selectEnglishById(Integer.parseInt(learned_word_num_array[j])));
-                    childs.add(map);
-                }
-                groupName.add("第"+(i+1)+"天  共"+childs.size()+"个");
-                childContext.add(childs);
-            }
-        }
-        if(learn_word.size()==1){                   //今天的数据
-            learned_word_num_array=learn_word.get(0).split(",");
-        }else{
-            learned_word_num_array=learn_word.get(learn_word.size()-1).split(",");
-        }
-        childs=new ArrayList();
-        for(int i=0;i<learned_word_num_array.length;i++){
-            Map map=new HashMap();
-            map.put("id",learned_word_num_array[i]);
-            map.put("english",dbHelper.selectEnglishById(Integer.parseInt(learned_word_num_array[i])));
-            childs.add(map);
-        }
-        groupName.add("今天   共"+childs.size()+"个");
-        childContext.add(childs);
-        //未学习
-        String learned_word_str=dbHelper.selectAllLearnWordNum();
-        learned_word_num_array=learned_word_str.split(",");
-        int []learned_words_int=new int[learned_word_num_array.length];
-        for(int i=0;i<learned_word_num_array.length;i++){
-            learned_words_int[i]=Integer.parseInt(learned_word_num_array[i]);
-        }
-        Arrays.sort(learned_words_int);
-        childs=new ArrayList<>();
-        int j=0,i=0;
-        while(i<1000){
-            if(j<learned_words_int.length&&i==learned_words_int[j]){
-                i++;
-                j++;
-            }else{
-                Map map=new HashMap();
-                map.put("id",i);
-                map.put("english",dbHelper.selectEnglishById(i));
-                childs.add(map);
-                i++;
-            }
-        }
-        groupName.add("未学习  共"+childs.size()+"个");
-        childContext.add(childs);
-    }
 
     class MyExpandableListViewAdapter implements ExpandableListAdapter {
 

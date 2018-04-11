@@ -19,7 +19,9 @@
             android:windowSoftInputMode="adjustPan|stateHidden">
         </activity>
         <activity android:name=".activity.TestActivity"/>
-        <activity android:name=".activity.RateOfLearningActivity"/>
+        <activity android:name=".activity.RateOfLearningActivity" />
+        <activity android:name=".activity.LoadingRateOfLearning"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
     </application>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
