@@ -78,6 +78,7 @@ public class TestFragment extends Fragment {
 
     private void initViews(View view){
         test_list=view.findViewById(R.id.id_test_list);
+        test_list.setDividerHeight(0);
     }
 
     private void initEvents(){
@@ -98,6 +99,7 @@ public class TestFragment extends Fragment {
                                 startActivity(intent);
                             }
                         })
+                        .setCancelable(false)
                         .create()
                         .show();
 

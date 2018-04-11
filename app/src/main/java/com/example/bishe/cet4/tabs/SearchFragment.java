@@ -29,6 +29,7 @@ import com.example.bishe.cet4.R;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -84,10 +85,25 @@ public class SearchFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if(s.length()>0){
-                    suggestWords = dbHelper.getSuggestWords(s.toString());
-                    showSuggestionWords(suggestWords,s.toString());
+                    String keyword=fliterInput(s);
+                    if(keyword.length()>0){
+                        if(isLocatedSearch(keyword)){
+                            //本地搜索
+                            suggestWords = dbHelper.getSuggestWords(keyword);
+                            showSuggestionWords(suggestWords,keyword);
+                        }else{
+                            //网络搜索
+
+                        }
+                    }
                     editText_input.setCompoundDrawables(drawable_search_icon,null,drawable_search_delete_btn,null);
                 }else{
+                    if(suggestWords==null){
+                        suggestWords=new ArrayList<>();
+                    }else{
+                        suggestWords.clear();
+                    }
+                    showSuggestionWords(suggestWords,"");
                     editText_input.setCompoundDrawables(drawable_search_icon,null,null,null);
                 }
             }
@@ -113,7 +129,6 @@ public class SearchFragment extends Fragment {
                         return false;
                     }
                 }
-
             }
         });
         search_btn.setOnClickListener(new View.OnClickListener() {
@@ -123,6 +138,26 @@ public class SearchFragment extends Fragment {
             }
         });
     }
+
+    private String fliterInput(CharSequence s){
+        String res="";
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)!='*'&&s.charAt(i)!='_'&&s.charAt(i)!='\''){
+                res+=s.charAt(i);
+            }
+        }
+        return res.trim();
+    }
+
+    private Boolean isLocatedSearch(String str){
+        char n=str.charAt(0);
+        if((n>='0'&&n<='9')||(n>='a'&&n<='z')||(n>='A'&&n<='Z')||n=='①'||n=='②'||n=='Ⅱ'||n=='α'||n=='β'||n=='γ'||n=='δ'||n=='ε'||n=='λ'){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     private void showSuggestionWords(final List words, final String keyword){
         listView_suggestion.setAdapter(new BaseAdapter() {
             @Override

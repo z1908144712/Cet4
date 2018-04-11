@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
 
 /**
@@ -45,26 +46,59 @@ public class DBHelper {
         return res;
     }
 
+    public String selectChineseById(int id){
+        Cursor cursor=db.rawQuery("select num from test_question where id=?",new String[]{String.valueOf(id)});
+        int num;
+        if(cursor.moveToNext()){
+            num=cursor.getInt(0);
+        }else{
+            num=0;
+        }
+        Random random=new Random();
+        int random_num=random.nextInt(num);
+        cursor=db.rawQuery("select answer"+(random_num+1)+" from test_question where id=?",new String[]{String.valueOf(id)});
+        String res;
+        if(cursor.moveToNext()){
+            res=cursor.getString(0);
+        }else{
+            res=null;
+        }
+        cursor.close();
+        return res;
+    }
+
     public String selectedByTime(String time){
         Cursor cursor=db.rawQuery("select words_num from words_plan where time=?",new String[]{time});
-        cursor.moveToNext();
-        String result_str=cursor.getString(0);
+        String result_str;
+        if(cursor.moveToNext()){
+            result_str=cursor.getString(0);
+        }else{
+            result_str=null;
+        }
         cursor.close();
         return result_str;
     }
 
     public int selectCount(){
         Cursor cursor=db.rawQuery("select count(*) from words_plan",null);
-        cursor.moveToNext();
-        int count=cursor.getInt(0);
+        int count;
+        if(cursor.moveToNext()){
+            count=cursor.getInt(0);
+        }else{
+            count=-1;
+        }
         cursor.close();
         return count;
     }
 
     public String select_words_plan_byId(int id){
         Cursor cursor=db.rawQuery("select words_num from words_plan where id=?",new String[]{String.valueOf(id)});
-        cursor.moveToNext();
-        String res=cursor.getString(0);
+        String res;
+        if(cursor.moveToNext()){
+            res=cursor.getString(0);
+        }else{
+            res=null;
+        }
         cursor.close();
         return res;
     }
@@ -103,6 +137,7 @@ public class DBHelper {
             map.put("chinese",cursor.getString(1));
             list.add(map);
         }
+        cursor.close();
         return list;
     }
 }

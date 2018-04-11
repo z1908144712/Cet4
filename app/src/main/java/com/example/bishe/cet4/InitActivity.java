@@ -101,6 +101,7 @@ public class InitActivity extends Activity implements View.OnClickListener{
                     }
                 })
                 .setPositiveButton("确定", null)
+                .setCancelable(false)
                 .create();
         alertDialog.show();
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
@@ -123,6 +124,7 @@ public class InitActivity extends Activity implements View.OnClickListener{
                                             init();
                                         }
                                     })
+                                    .setCancelable(false)
                                     .create()
                                     .show();
                         }else{
@@ -146,6 +148,7 @@ public class InitActivity extends Activity implements View.OnClickListener{
                                     init();
                                 }
                             })
+                            .setCancelable(false)
                             .create()
                             .show();
                 }

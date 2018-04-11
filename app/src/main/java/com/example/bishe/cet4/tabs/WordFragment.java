@@ -1,6 +1,9 @@
 package com.example.bishe.cet4.tabs;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bishe.cet4.R;
+import com.example.bishe.cet4.activity.TestActivity;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 import com.example.bishe.cet4.object.Word;
@@ -171,6 +175,22 @@ public class WordFragment extends Fragment{
                     getView().startAnimation(animation);
                     showWord(myChoice);
                 }else{
+                    new AlertDialog.Builder(getContext())
+                            .setMessage("您已学习完今天的单词，是否开始测试？")
+                            .setNegativeButton("取消",null)
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent=new Intent();
+                                    int count=dbHelper.selectCount();
+                                    intent.putExtra("id",count-1);
+                                    intent.putExtra("count",count);
+                                    intent.setClass(getContext(), TestActivity.class);
+                                    startActivity(intent);
+                                }
+                            })
+                            .create()
+                            .show();
                     Toast.makeText(getContext(),"已经是最后一个了~",Toast.LENGTH_SHORT).show();
                 }
             }
