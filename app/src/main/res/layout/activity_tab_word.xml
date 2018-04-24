@@ -1,80 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_white"
+    android:orientation="vertical">
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@color/colorPrimary"
+            android:gravity="center"
+            android:textColor="@color/fontWhite"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:text="单词"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="1"
+            android:layout_height="0dp"
             android:orientation="vertical"
-            android:gravity="center">
-            <TextView
-                android:id="@+id/word_index"
-                android:layout_width="120px"
-                android:layout_height="120px"
-                android:layout_gravity="right"
-                android:layout_marginRight="20px"
-                android:layout_marginTop="20px"
-                android:textColor="#000000"
-                />
-            <TextView
-                android:id="@+id/word_english"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center|bottom"
-                android:text="Word"
-                android:textStyle="bold"
-                android:textColor="#000000"
-                android:textSize="50sp"/>
+            android:layout_weight="2">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/book"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="0.5">
-            <TextView
-                android:id="@+id/word_phonetic"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_weight="2">
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Phonetic"
-                android:textColor="#000000"
-                android:textSize="20sp"
-                android:gravity="center|top"
-                />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:text="剩余词数"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:text="坚持天数"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/id_last_words_num"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="40sp"
+                    android:gravity="center"
+                    android:textStyle="bold"
+                    android:textColor="@color/fontBlack"
+                    android:text="0000"/>
+                <TextView
+                    android:id="@+id/id_learned_days"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:textColor="@color/fontBlack"
+                    android:text="000"/>
+            </LinearLayout>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_marginRight="30px"
-            android:layout_marginLeft="30px"
-            android:layout_height="0px"
-            android:layout_weight="0.5">
-            <TextView
-                android:id="@+id/word_chinese"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textColor="#000000"
-                android:gravity="center|top"
-                android:text="中文"
-                android:textSize="20sp"/>
+            android:layout_height="2dip"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layerType="software"
+            android:background="@drawable/dash_line">
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:layout_weight="2"
-            android:orientation="vertical">
-            <View
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:layout_weight="6">
+            <LinearLayout
+                android:layout_weight="1"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="#999999">
-            </View>
-            <view
-                android:id="@+id/word_examples_list"
+                android:gravity="center"
+                android:layout_height="0dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="14sp"
+                        android:gravity="center"
+                        android:text="今天需要学习"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="14sp"
+                        android:gravity="center"
+                        android:text="今天学习时长"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/id_learn_words_today"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="40sp"
+                        android:gravity="center"
+                        android:textStyle="bold"
+                        android:textColor="@color/fontBlack"
+                        android:text="00"/>
+                    <TextView
+                        android:id="@+id/id_learned_time_today"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="40sp"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        android:textColor="@color/fontBlack"
+                        android:text="0:0:0"/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                class="com.example.bishe.cet4.tabs.WordFragment$ExampleList"
-                >
-            </view>
+                android:layout_height="2dip"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layerType="software"
+                android:background="@drawable/dash_line">
+            </LinearLayout>
+            <LinearLayout
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="0dp">
+                <Button
+                    android:id="@+id/id_begin_learn_today"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:textColor="@color/fontWhite"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:text="开始学习"
+                    android:background="@drawable/red_button_bg"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
+</LinearLayout>

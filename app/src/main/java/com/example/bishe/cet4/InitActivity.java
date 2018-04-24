@@ -10,15 +10,21 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
+import com.example.bishe.cet4.object.AppKey;
+import com.youdao.sdk.app.YouDaoApplication;
 
 import java.lang.reflect.Field;
 import java.text.ParseException;
@@ -27,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import cn.bmob.v3.Bmob;
 
 /**
  * Created by Skywilling on 2018/1/10.
@@ -39,28 +47,52 @@ public class InitActivity extends Activity implements View.OnClickListener{
     private Button item_4=null;
     private Button item_5=null;
     private Button item_my=null;
+    private Button init_word_plan_button=null;
     private EditText my_input=null;
-    private TextView item_result=null;
+    private String input_plan="30";
     private SQLiteDatabase db=null;
+    private DBHelper dbHelper=null;
+    private int words_count=0;
     private boolean isFirst=false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //初始化Bmob
+        initBmob();
+        //初始化YouDaoApplication
+        initYouDaoAppliaction();
+        //初始化数据库
+        initDatabase();
         //首次使用
-        if(isFirstUse()){
-            isFirst=true;
-            showWordPlan();
+        isFirst=isFirstUse();
+        if(isFirst){
+            setContentView(R.layout.activity_init_layout);
+            //初始化控件
+            initViews();
+            //初始化事件
+            initEvents();
         }else{
-            init();
+            //初始化计划
+            initPlan();
         }
     }
 
-    private void init(){
-        //初始化数据库
-        initDatabase();
-        //初始化数据
-        initData();
+    private void initBmob(){
+        Bmob.initialize(this,AppKey.appKey_Bmob);
     }
+
+    private void initYouDaoAppliaction(){
+        YouDaoApplication.init(this, AppKey.appKey_YouDao);
+    }
+
+    private void initDatabase(){
+        AssetsDatabaseManager.initManager(getApplicationContext());
+        AssetsDatabaseManager assetsDatabaseManager=AssetsDatabaseManager.getAssetsDatabaseManager();
+        db=assetsDatabaseManager.getDatabase("dict.db");
+        dbHelper=new DBHelper(db);
+    }
+
     private void jump(){
         //跳转到主界面
         Intent intent=new Intent();
@@ -68,15 +100,14 @@ public class InitActivity extends Activity implements View.OnClickListener{
         startActivity(intent);
         finish();
     }
-    private void initViews(View view){
-        item_1=view.findViewById(R.id.item_1);
-        item_2=view.findViewById(R.id.item_2);
-        item_3=view.findViewById(R.id.item_3);
-        item_4=view.findViewById(R.id.item_4);
-        item_5=view.findViewById(R.id.item_5);
-        item_result=view.findViewById(R.id.item_result);
-        item_my=view.findViewById(R.id.item_my);
-        my_input=view.findViewById(R.id.my_input);
+    private void initViews(){
+        item_1=findViewById(R.id.item_1);
+        item_2=findViewById(R.id.item_2);
+        item_3=findViewById(R.id.item_3);
+        item_4=findViewById(R.id.item_4);
+        item_5=findViewById(R.id.item_5);
+        item_my=findViewById(R.id.item_my);
+        init_word_plan_button=findViewById(R.id.init_word_plan_button);
     }
     private void initEvents(){
         item_1.setOnClickListener(this);
@@ -85,120 +116,60 @@ public class InitActivity extends Activity implements View.OnClickListener{
         item_4.setOnClickListener(this);
         item_5.setOnClickListener(this);
         item_my.setOnClickListener(this);
+        init_word_plan_button.setOnClickListener(this);
     }
-    private void showWordPlan(){
-        View alertView=LayoutInflater.from(InitActivity.this).inflate(R.layout.word_plan_layout,null);
-        initViews(alertView);
-        initEvents();
-        final AlertDialog alertDialog=new AlertDialog.Builder(InitActivity.this)
-                .setTitle("你准备在几天内完成？（推荐30天）")
-                .setView(alertView)
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                })
-                .setPositiveButton("确定", null)
-                .setCancelable(false)
-                .create();
-        alertDialog.show();
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(my_input.getVisibility()==View.VISIBLE){
-                    String input=my_input.getText().toString();
-                    input=input.trim();
-                    if (null!=input||!("").equals(input)){
-                        final int days=Integer.parseInt(input);
-                        if(days>=20&&days<=60){
-                            new AlertDialog.Builder(InitActivity.this)
-                                    .setMessage("确定在"+days+"天内完成？")
-                                    .setNegativeButton("取消",null)
-                                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            storePlanDays(days);
-                                            alertDialog.dismiss();
-                                            init();
-                                        }
-                                    })
-                                    .setCancelable(false)
-                                    .create()
-                                    .show();
-                        }else{
-                            Toast.makeText(InitActivity.this,"输入的数字应在20~60之间！",Toast.LENGTH_SHORT).show();
-                        }
-                    }else{
-                        Toast.makeText(InitActivity.this,"输入你的计划！",Toast.LENGTH_SHORT).show();
-                    }
-                }else{
-                    String input=item_result.getText().toString();
-                    input=input.trim();
-                    final int days=Integer.parseInt(input);
-                    new AlertDialog.Builder(InitActivity.this)
-                            .setMessage("确定在"+days+"天内完成？")
-                            .setNegativeButton("取消",null)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    storePlanDays(days);
-                                    alertDialog.dismiss();
-                                    init();
-                                }
-                            })
-                            .setCancelable(false)
-                            .create()
-                            .show();
-                }
-            }
-        });
-        try {
-            Field mAlert = AlertDialog.class.getDeclaredField("mAlert");
-            mAlert.setAccessible(true);
-            Object alertController = mAlert.get(alertDialog);
-            Field mTitleView = alertController.getClass().getDeclaredField("mTitleView");
-            mTitleView.setAccessible(true);
-            TextView title = (TextView) mTitleView.get(alertController);
-            title.setTextColor(Color.RED);
-            title.setTextSize(14);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
 
+    private void restartApplication() {
+        final Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
+
     private void storePlanDays(int days){
         SharedPreferences sharedPreferences=getSharedPreferences("plandays",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
         editor.putInt("plandays",days);
-        editor.putInt("plannum",1000%days==0?1000/days:(1000/days)+1);
+        words_count=dbHelper.selectCountFromWords();
+        editor.putInt("plannum",words_count%days==0?words_count/days:(words_count/days)+1);
         Date date=new Date();
         SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd");
         editor.putString("previous_time",simpleDateFormat.format(date));
         editor.putLong("begin_time",date.getTime());
         editor.commit();
     }
-    private boolean isFirstUse(){
+
+    private void setNotFirstUse(){
         SharedPreferences sharedPreferences=getSharedPreferences("isFirst", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("isFirst",false);
+        editor.commit();
+    }
+
+    private void setFirstUse(){
+        SharedPreferences sharedPreferences=getSharedPreferences("isFirst", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("isFirst",true);
+        editor.commit();
+    }
+
+    private boolean isFirstUse(){
+        SharedPreferences sharedPreferences=getSharedPreferences("isFirst", Context.MODE_PRIVATE);
         if(sharedPreferences.getBoolean("isFirst",true)){
-            editor.putBoolean("isFirst",false);
-            editor.commit();
             return true;
         }else{
             return false;
         }
     }
-    private void initData(){
+
+   private void initPlan(){
         SharedPreferences sharedPreferences=getSharedPreferences("plandays",Context.MODE_PRIVATE);
         int days=sharedPreferences.getInt("plandays",-1);
         int num=sharedPreferences.getInt("plannum",-1);
         long begin_time=sharedPreferences.getLong("begin_time",-1);
         String previous_time=sharedPreferences.getString("previous_time",null);
         if(days==-1||num==-1||null==previous_time||begin_time==-1){
-            showWordPlan();
+            setFirstUse();
+            restartApplication();
         }else{
             Date date_now=new Date();
             Date date_previous=null;
@@ -211,24 +182,16 @@ public class InitActivity extends Activity implements View.OnClickListener{
             }
             long during_time=date_now.getTime()-date_previous.getTime();
             if(during_time>0||isFirst){
-                isFirst=false;
                 SharedPreferences.Editor editor=sharedPreferences.edit();
                 editor.putString("previous_time",simpleDateFormat.format(date_now));
+                System.out.println(simpleDateFormat.format(date_now));
                 editor.commit();
-                AssetsDatabaseManager assetsDatabaseManager=AssetsDatabaseManager.getAssetsDatabaseManager();
-                db=assetsDatabaseManager.getDatabase("dict.db");
-                DBHelper dbHelper=new DBHelper(db);
-                String words_num_str=dbHelper.selectAllLearnWordNum();
+                String all_learned_words_str=dbHelper.selectAllLearnWordNum();
                 List<Integer> res;
-                if(("").equals(words_num_str)){
+                if(("").equals(all_learned_words_str.trim())){
                     res=random_num(num,null);
                 }else{
-                    String[] words_num_strs=words_num_str.split(",");
-                    int []exp=new int[words_num_strs.length-1];
-                    for(int i=0;i<exp.length;i++){
-                        exp[i]=Integer.parseInt(words_num_strs[i]);
-                    }
-                    res=random_num(num,exp);
+                    res=random_num(num,all_learned_words_str.trim());
                 }
                 String res_str="";
                 for(int i=0;i<res.size();i++){
@@ -239,39 +202,26 @@ public class InitActivity extends Activity implements View.OnClickListener{
             jump();
         }
     }
-    private List<Integer> random_num(int num,int[] exp){
+
+    private List<Integer> random_num(int num,String exp){
         List<Integer> res=new ArrayList();
-        List<Integer> sug=new ArrayList();
         Random random=new Random();
-        if(null==exp||exp.length==0){
-            for(int i=0;i<1000;i++){
-                sug.add(i);
-            }
-        }else{
-            for(int i=0;i<1000;i++){
-                if(!isExist(i,exp)){
-                    sug.add(i);
-                }
-            }
+        if(null==exp){
+            exp="";
         }
+        int temp=0;
+        String temp_str="";
         for(int i=0;i<num;i++){
-            res.add(sug.remove(random.nextInt(sug.size())));
-            if(sug.size()==0){
-                break;
+            temp=random.nextInt(dbHelper.selectCountFromWords());
+            temp_str=String.valueOf(temp);
+            if(!exp.contains(temp_str)){
+                res.add(temp);
+            }else{
+                i--;
             }
+            exp+=temp_str+",";
         }
         return res;
-    }
-    private Boolean isExist(int n,int [] exp){
-        for(int i=0;i<exp.length;i++){
-            if(n==exp[i]){
-                return true;
-            }
-        }
-        return false;
-    }
-    private void initDatabase(){
-        AssetsDatabaseManager.initManager(getApplicationContext());
     }
 
     @Override
@@ -280,40 +230,105 @@ public class InitActivity extends Activity implements View.OnClickListener{
             case R.id.item_1:
                 unSelectedAll();
                 item_1.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
-                item_result.setText("20");
+                item_1.setTextColor(Color.parseColor("#000000"));
+                input_plan="20";
                 break;
             case R.id.item_2:
                 unSelectedAll();
                 item_2.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
-                item_result.setText("25");
+                item_2.setTextColor(Color.parseColor("#000000"));
+                input_plan="25";
                 break;
             case R.id.item_3:
                 unSelectedAll();
                 item_3.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
-                item_result.setText("30");
+                item_3.setTextColor(Color.parseColor("#000000"));
+                input_plan="30";
                 break;
             case R.id.item_4:
                 unSelectedAll();
                 item_4.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
-                item_result.setText("35");
+                item_4.setTextColor(Color.parseColor("#000000"));
+                input_plan="35";
                 break;
             case R.id.item_5:
                 unSelectedAll();
                 item_5.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
-                item_result.setText("40");
+                item_5.setTextColor(Color.parseColor("#000000"));
+                input_plan="40";
                 break;
             case R.id.item_my:
-                my_input.setVisibility(View.VISIBLE);
+                unSelectedAll();
+                item_my.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
+                item_my.setTextColor(Color.parseColor("#000000"));
+                final AlertDialog.Builder builder=new AlertDialog.Builder(this);
+                builder.setTitle("自定义");
+                my_input=new EditText(builder.getContext());
+                my_input.setHint("输入20-60之间的数字");
+                my_input.setBackgroundResource(R.drawable.word_plan_input_bg);
+                my_input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                my_input.setWidth(800);
+                LinearLayout linearLayout=new LinearLayout(builder.getContext());
+                linearLayout.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams layoutParams=new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                linearLayout.setLayoutParams(layoutParams);
+                linearLayout.addView(my_input);
+                builder.setView(linearLayout);
+                builder.setCancelable(false);
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        unSelectedAll();
+                        item_3.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
+                        item_3.setTextColor(Color.parseColor("#000000"));
+                    }
+                });
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        input_plan=my_input.getText().toString().trim();
+                        if(input_plan.equals("")){
+                            unSelectedAll();
+                            item_3.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
+                            item_3.setTextColor(Color.parseColor("#000000"));
+                            Toast.makeText(builder.getContext(),"未输入数字！",Toast.LENGTH_SHORT).show();
+                        }else{
+                            int input_plan_num=Integer.parseInt(input_plan);
+                            if(input_plan_num<20||input_plan_num>60){
+                                unSelectedAll();
+                                item_3.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
+                                item_3.setTextColor(Color.parseColor("#000000"));
+                                Toast.makeText(builder.getContext(),"数字应在20~60之间！",Toast.LENGTH_SHORT).show();
+                            }else{
+                                item_my.setText(input_plan+"天");
+                            }
+                        }
+                    }
+                });
+                builder.create().show();
+                break;
+            case R.id.init_word_plan_button:
+                setNotFirstUse();
+                storePlanDays(Integer.parseInt(input_plan));
+                //初始化计划
+                initPlan();
                 break;
         }
     }
+
     private void unSelectedAll(){
             item_1.setBackgroundResource(R.drawable.unselected_word_plan_shape_button);
+            item_1.setTextColor(Color.parseColor("#ffffff"));
             item_2.setBackgroundResource(R.drawable.unselected_word_plan_shape_button);
+            item_2.setTextColor(Color.parseColor("#ffffff"));
             item_3.setBackgroundResource(R.drawable.unselected_word_plan_shape_button);
+            item_3.setTextColor(Color.parseColor("#ffffff"));
             item_4.setBackgroundResource(R.drawable.unselected_word_plan_shape_button);
+            item_4.setTextColor(Color.parseColor("#ffffff"));
             item_5.setBackgroundResource(R.drawable.unselected_word_plan_shape_button);
-            my_input.setText("");
-            my_input.setVisibility(View.INVISIBLE);
+            item_5.setTextColor(Color.parseColor("#ffffff"));
+            item_my.setText("自定义");
+            item_my.setBackgroundResource(R.drawable.unselected_word_plan_shape_button);
+            item_my.setTextColor(Color.parseColor("#ffffff"));
     }
 }

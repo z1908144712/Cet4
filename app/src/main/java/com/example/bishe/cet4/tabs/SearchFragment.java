@@ -1,5 +1,6 @@
 package com.example.bishe.cet4.tabs;
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -15,17 +16,15 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
+import com.example.bishe.cet4.activity.WordDetailActivity;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 
@@ -40,14 +39,16 @@ import java.util.regex.Pattern;
  */
 
 public class SearchFragment extends Fragment {
-    private EditText editText_input;
-    private Drawable drawable_search_icon;
-    private Drawable drawable_search_delete_btn;
-    private Button search_btn;
-    private ListView listView_suggestion;
-    private List<Map<String, String>> suggestWords;
-    private DBHelper dbHelper;
-    private SQLiteDatabase db;
+    private EditText editText_input=null;
+    private Drawable drawable_search_icon=null;
+    private Drawable drawable_search_delete_btn=null;
+    private Button search_btn=null;
+    private ListView listView_suggestion=null;
+    private List<Map<String, String>> suggestWords=null;
+    private DBHelper dbHelper=null;
+    private SQLiteDatabase db=null;
+    private String keyword=null;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -85,15 +86,12 @@ public class SearchFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if(s.length()>0){
-                    String keyword=fliterInput(s);
+                    keyword= inputFilter(s);
                     if(keyword.length()>0){
                         if(isLocatedSearch(keyword)){
                             //本地搜索
                             suggestWords = dbHelper.getSuggestWords(keyword);
                             showSuggestionWords(suggestWords,keyword);
-                        }else{
-                            //网络搜索
-
                         }
                     }
                     editText_input.setCompoundDrawables(drawable_search_icon,null,drawable_search_delete_btn,null);
@@ -134,12 +132,34 @@ public class SearchFragment extends Fragment {
         search_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent=new Intent();
+                intent.setClass(getContext(), WordDetailActivity.class);
+                intent.putExtra("keyword",keyword);
+                if(isChinese(keyword)){
+                    intent.putExtra("type",WordDetailActivity.TYPE_CHINESE);
+                }else if(isEnglish(keyword)){
+                    intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
+                }else{
+                    intent.putExtra("type",WordDetailActivity.TYPE_AUTO);
+                }
+                intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
+                startActivity(intent);
+            }
+        });
+        listView_suggestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent=new Intent();
+                intent.setClass(getContext(), WordDetailActivity.class);
+                intent.putExtra("keyword",suggestWords.get(position).get("english"));
+                intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
+                intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
+                startActivity(intent);
             }
         });
     }
 
-    private String fliterInput(CharSequence s){
+    private String inputFilter(CharSequence s){
         String res="";
         for(int i=0;i<s.length();i++){
             if(s.charAt(i)!='*'&&s.charAt(i)!='_'&&s.charAt(i)!='\''){
@@ -147,6 +167,26 @@ public class SearchFragment extends Fragment {
             }
         }
         return res.trim();
+    }
+
+    private Boolean isChinese(String str){
+        for(int i=0;i<str.length();i++){
+            int n=(int)str.charAt(i);
+            if(n<19968||n>40623){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Boolean isEnglish(String str){
+        for(int i=0;i<str.length();i++){
+            char n=str.charAt(i);
+            if(!(n>='a'&&n<='z')||!(n>='A'&&n<='Z')){
+                return false;
+            }
+        }
+        return true;
     }
 
     private Boolean isLocatedSearch(String str){
@@ -194,6 +234,7 @@ public class SearchFragment extends Fragment {
             }
         });
     }
+
     private SpannableString matcherSearchKeyword(String text,int color,String keyword){
         SpannableString spannableString=new SpannableString(text);
         Pattern pattern=Pattern.compile(keyword);

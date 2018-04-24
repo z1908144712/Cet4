@@ -2,29 +2,34 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/gray_white"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="25px"
-        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_margin="10dp"
         android:orientation="horizontal">
+
         <EditText
             android:id="@+id/search_input"
-            android:layout_width="wrap_content"
-            android:layout_height="120px"
-            android:singleLine="true"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="8"
-            android:layout_margin="5px"
-            android:background="@drawable/input_bg"
-            android:drawableLeft="@drawable/ic_search_icon"/>
+            android:background="@drawable/search_input_bg"
+            android:drawableLeft="@drawable/ic_search_icon"
+            android:singleLine="true" />
         <Button
             android:text="搜索"
             android:id="@+id/search_btn"
-            android:layout_weight="0.1"
-            android:layout_width="120px"
-            android:layout_height="120px"
-            android:background="@drawable/button_bg"
+            android:layout_weight="2"
+            android:layout_width="0dp"
+            android:textSize="16sp"
+            android:textColor="@color/fontWhite"
+            android:textStyle="bold"
+            android:layout_marginLeft="5dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/red_button_bg"
             />
     </LinearLayout>
     <LinearLayout

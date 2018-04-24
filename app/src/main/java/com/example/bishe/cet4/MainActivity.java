@@ -117,16 +117,21 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
 
     private void resetImgs(){
-        imageButton_word.setBackgroundResource(R.drawable.icon_word);
-        imageButton_learn.setBackgroundResource(R.drawable.icon_learn);
-        imageButton_search.setBackgroundResource(R.drawable.icon_search);
-        imageButton_test.setBackgroundResource(R.drawable.icon_test);
-        imageButton_personal.setBackgroundResource(R.drawable.icon_personal);
-        textView_word.setTextColor(Color.BLACK);
-        textView_learn.setTextColor(Color.BLACK);
-        textView_search.setTextColor(Color.BLACK);
-        textView_test.setTextColor(Color.BLACK);
-        textView_personal.setTextColor(Color.BLACK);
+        imageButton_word.setBackgroundResource(R.drawable.ic_tab_word);
+        imageButton_learn.setBackgroundResource(R.drawable.ic_tab_learn);
+        imageButton_search.setBackgroundResource(R.drawable.ic_tab_search);
+        imageButton_test.setBackgroundResource(R.drawable.ic_tab_test);
+        imageButton_personal.setBackgroundResource(R.drawable.ic_tab_personal);
+        textView_word.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
+        textView_word.setTextSize(12);
+        textView_learn.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
+        textView_learn.setTextSize(12);
+        textView_search.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
+        textView_search.setTextSize(12);
+        textView_test.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
+        textView_test.setTextSize(12);
+        textView_personal.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
+        textView_personal.setTextSize(12);
     }
     private void hideFragments(FragmentTransaction transaction){
         if(fragment_word!=null){
@@ -150,8 +155,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         hideFragments(fragmentTransaction);
         switch (i){
             case 0:
-                imageButton_word.setBackgroundResource(R.drawable.icon_word_select);
-                textView_word.setTextColor(Color.rgb(40,207,87));
+                imageButton_word.setBackgroundResource(R.drawable.ic_tab_word_select);
+                textView_word.setTextSize(14);
+                textView_word.setTextColor(getResources().getColor(R.color.colorPrimary));
                 if(fragment_word==null){
                     fragment_word=new WordFragment();
                     fragmentTransaction.add(R.id.id_fragments,fragment_word);
@@ -160,8 +166,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             case 1:
-                imageButton_learn.setBackgroundResource(R.drawable.icon_learn_select);
-                textView_learn.setTextColor(Color.rgb(40,207,87));
+                imageButton_learn.setBackgroundResource(R.drawable.ic_tab_learn_select);
+                textView_learn.setTextColor(getResources().getColor(R.color.colorPrimary));
+                textView_learn.setTextSize(14);
                 if(fragment_learn==null){
                     fragment_learn=new LearnFragment();
                     fragmentTransaction.add(R.id.id_fragments,fragment_learn);
@@ -170,8 +177,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             case 2:
-                imageButton_search.setBackgroundResource(R.drawable.icon_search_select);
-                textView_search.setTextColor(Color.rgb(40,207,87));
+                imageButton_search.setBackgroundResource(R.drawable.ic_tab_search_select);
+                textView_search.setTextColor(getResources().getColor(R.color.colorPrimary));
+                textView_search.setTextSize(14);
                 if(fragment_search==null){
                     fragment_search=new SearchFragment();
                     fragmentTransaction.add(R.id.id_fragments,fragment_search);
@@ -180,8 +188,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             case 3:
-                imageButton_test.setBackgroundResource(R.drawable.icon_test_select);
-                textView_test.setTextColor(Color.rgb(40,207,87));
+                imageButton_test.setBackgroundResource(R.drawable.ic_tab_test_select);
+                textView_test.setTextColor(getResources().getColor(R.color.colorPrimary));
+                textView_test.setTextSize(14);
                 if(fragment_test==null){
                     fragment_test=new TestFragment();
                     fragmentTransaction.add(R.id.id_fragments,fragment_test);
@@ -190,8 +199,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             case 4:
-                imageButton_personal.setBackgroundResource(R.drawable.icon_personal_select);
-                textView_personal.setTextColor(Color.rgb(40,207,87));
+                imageButton_personal.setBackgroundResource(R.drawable.ic_tab_personal_select);
+                textView_personal.setTextColor(getResources().getColor(R.color.colorPrimary));
+                textView_personal.setTextSize(14);
                 if(fragment_personal==null){
                     fragment_personal=new PersonalFragment();
                     fragmentTransaction.add(R.id.id_fragments,fragment_personal);

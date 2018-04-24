@@ -17,9 +17,9 @@
         <ImageButton
             android:id="@+id/id_tab_word_img"
             android:clickable="false"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/icon_word_select"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/ic_tab_word_select"
             />
 
         <TextView
@@ -28,8 +28,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="单词"
-            android:textColor="#28CF57"
-            android:textSize="12sp" />
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:textSize="14sp" />
     </LinearLayout>
     <LinearLayout
         android:layout_width="0dp"
@@ -42,15 +43,16 @@
         <ImageButton
             android:id="@+id/id_tab_learn_img"
             android:clickable="false"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/icon_learn"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/ic_tab_learn"
             />
         <TextView
             android:id="@+id/id_text_learn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textColor="@color/tabSelectFontColor"
+            android:textStyle="bold"
             android:textSize="12sp"
             android:text="学习"
             />
@@ -66,15 +68,16 @@
         <ImageButton
             android:id="@+id/id_tab_search_img"
             android:clickable="false"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/icon_search"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/ic_tab_search"
             />
         <TextView
             android:id="@+id/id_text_search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textStyle="bold"
+            android:textColor="@color/tabSelectFontColor"
             android:textSize="12sp"
             android:text="搜索"
             />
@@ -90,15 +93,16 @@
         <ImageButton
             android:id="@+id/id_tab_test_img"
             android:clickable="false"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/icon_test"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/ic_tab_test"
             />
         <TextView
             android:id="@+id/id_text_test"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textColor="@color/tabSelectFontColor"
+            android:textStyle="bold"
             android:textSize="12sp"
             android:text="测试"
             />
@@ -114,15 +118,16 @@
         <ImageButton
             android:id="@+id/id_tab_personal_img"
             android:clickable="false"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/icon_personal"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/ic_tab_personal"
             />
         <TextView
             android:id="@+id/id_text_personal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
+            android:textColor="@color/tabSelectFontColor"
+            android:textStyle="bold"
             android:textSize="12sp"
             android:text="个人"
             />

@@ -1,223 +1,95 @@
 package com.example.bishe.cet4.tabs;
 
-import android.app.AlertDialog;
+
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.bishe.cet4.R;
-import com.example.bishe.cet4.activity.TestActivity;
+import com.example.bishe.cet4.activity.WordActivity;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
-import com.example.bishe.cet4.object.Word;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Skywilling on 2018/1/2.
  */
 
-public class WordFragment extends Fragment{
-    private TextView textView_english;
-    private TextView textView_phonetic;
-    private TextView textView_chinese;
-    private ExampleList listView_example;
-    private TextView textView_word_num;
-    private SQLiteDatabase db;
-    private int myChoice=0;
-    private static GestureDetector gestureDetector;
-    private int words_num[];
-    private DBHelper dbHelper;
+public class WordFragment extends Fragment implements View.OnClickListener{
+    private TextView textView_last_words_num=null;
+    private TextView textView_learned_days=null;
+    private TextView textView_learn_words_today=null;
+    private TextView textView_learned_time_today=null;
+    private Button button_begin_learn_today=null;
+    private SQLiteDatabase db=null;
+    private DBHelper dbHelper=null;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.activity_tab_word,container,false);
-        initViews(view);
-        initEvents(view);
+        //初始化数据库
         initDatabase();
+        //初始化控件
+        initViews(view);
+        //初始化事件
+        initEvents(view);
+        //初始化数据
         initData();
         return view;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        initData();
+    }
+
     private void initDatabase(){
         AssetsDatabaseManager assetsDatabaseManager=AssetsDatabaseManager.getAssetsDatabaseManager();
         db=assetsDatabaseManager.getDatabase("dict.db");
         dbHelper=new DBHelper(db);
     }
+
     private void initViews(View view){
-        textView_english=view.findViewById(R.id.word_english);
-        textView_chinese=view.findViewById(R.id.word_chinese);
-        textView_phonetic=view.findViewById(R.id.word_phonetic);
-        listView_example=(ExampleList) view.findViewById(R.id.word_examples_list);
-        textView_word_num=view.findViewById(R.id.word_index);
+        textView_last_words_num=view.findViewById(R.id.id_last_words_num);
+        textView_learned_days=view.findViewById(R.id.id_learned_days);
+        textView_learn_words_today=view.findViewById(R.id.id_learn_words_today);
+        textView_learned_time_today=view.findViewById(R.id.id_learned_time_today);
+        button_begin_learn_today=view.findViewById(R.id.id_begin_learn_today);
     }
-    private void initEvents(final View view){
-        //设置手势检测器
-        gestureDetector=new GestureDetector(getContext(),new GestureEvent());
-        //设置手势监听器
-        view.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                gestureDetector.onTouchEvent(event);
-                return true;
-            }
-        });
-        listView_example.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                gestureDetector.onTouchEvent(event);
-                return false;
-            }
-        });
+
+    private void initEvents(View view){
+        button_begin_learn_today.setOnClickListener(this);
     }
-    public void initData(){
-        DBHelper dbHelper=new DBHelper(db);
+
+    private void initData(){
+        textView_last_words_num.setText(String.valueOf(dbHelper.select_learned_words_num_except_today()));
+        textView_learned_days.setText(String.valueOf(dbHelper.selectCountFromWordsPlan()));
         SharedPreferences sharedPreferences=getActivity().getSharedPreferences("plandays",Context.MODE_PRIVATE);
         String previous_time=sharedPreferences.getString("previous_time",null);
-        String words_num_str=dbHelper.selectedByTime(previous_time);
-        String []words_num_strs=words_num_str.split(",");
-        words_num=new int[words_num_strs.length];
-        for (int i=0;i<words_num.length;i++){
-            words_num[i]=Integer.parseInt(words_num_strs[i]);
-        }
-        showWord(0);
-    }
-    private void showWord(int id){
-        textView_word_num.setText((id+1)+"/"+words_num.length);
-        List list=dbHelper.selectWordById(words_num[id]);
-        Word word=(Word)list.get(0);
-        textView_english.setText(word.getEnglish());
-        textView_chinese.setText("");
-        String chineses[]=word.getChinese().split("#");
-        for(int i=0;i<chineses.length;i++){
-            textView_chinese.append(chineses[i]+" ");
-        }
-        textView_phonetic.setText("");
-        String phonetics[]=word.getPhonetic().split(",");
-        for(int i=0;i<phonetics.length;i++){
-            textView_phonetic.append("["+phonetics[i]+"]\n");
-        }
-        String examples[]=word.getExample().split("#");
-        List <Map<String,Object>> example_list=new ArrayList<Map<String,Object>>();
-        for(int i=0;i<examples.length;i+=2){
-            Map<String,Object> map=new HashMap<String,Object>();
-            map.put("id",String.valueOf(i/2+1)+".");
-            map.put("english",examples[i].substring(2));
-            map.put("chinese",examples[i+1]);
-            example_list.add(map);
-        }
-        listView_example.setAdapter(new SimpleAdapter(getContext(),example_list,R.layout.word_examples_list_layout,new String[]{"id","english","chinese"},new int[]{R.id.word_example_list_id,R.id.word_example_list_english,R.id.word_example_list_chinese}));
+        textView_learn_words_today.setText(String.valueOf(dbHelper.selectCountToday(previous_time)));
+        textView_learned_time_today.setText(dbHelper.selectLearnTimeFromWordPlanByTime(previous_time));
     }
 
-    class GestureEvent implements GestureDetector.OnGestureListener{
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return false;
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.id_begin_learn_today:
+                Intent intent=new Intent();
+                intent.setClass(getContext(), WordActivity.class);
+                startActivity(intent);
+                break;
         }
-
-        @Override
-        public void onShowPress(MotionEvent e) {
-
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            return false;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return false;
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if((e2.getX()-e1.getX())>200&&Math.abs(velocityX)>50){
-                //向左滑动
-                if(myChoice>0){
-                    myChoice--;
-                    Animation animation= AnimationUtils.loadAnimation(getContext(),R.anim.anim_revert);
-                    getView().startAnimation(animation);
-                    showWord(myChoice);
-                }else{
-                    Toast.makeText(getContext(),"已经是第一个了~",Toast.LENGTH_SHORT).show();
-                }
-            }else if((e1.getX()-e2.getX())>200&&Math.abs(velocityX)>50){
-                //向右滑动
-                if(myChoice<words_num.length-1){
-                    myChoice++;
-                    Animation animation= AnimationUtils.loadAnimation(getContext(),R.anim.anim_next);
-                    getView().startAnimation(animation);
-                    showWord(myChoice);
-                }else{
-                    new AlertDialog.Builder(getContext())
-                            .setMessage("您已学习完今天的单词，是否开始测试？")
-                            .setNegativeButton("取消",null)
-                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent=new Intent();
-                                    int count=dbHelper.selectCount();
-                                    intent.putExtra("id",count-1);
-                                    intent.putExtra("count",count);
-                                    intent.setClass(getContext(), TestActivity.class);
-                                    startActivity(intent);
-                                }
-                            })
-                            .create()
-                            .show();
-                    Toast.makeText(getContext(),"已经是最后一个了~",Toast.LENGTH_SHORT).show();
-                }
-            }
-            return false;
-        }
-    }
-
-    public static class ExampleList extends ListView{
-
-        public ExampleList(Context context) {
-            super(context);
-        }
-
-        public ExampleList(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        public ExampleList(Context context, AttributeSet attrs, int defStyleAttr) {
-            super(context, attrs, defStyleAttr);
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(MotionEvent ev) {
-            gestureDetector.onTouchEvent(ev);
-            return super.onInterceptTouchEvent(ev);
-        }
-
     }
 }
 
