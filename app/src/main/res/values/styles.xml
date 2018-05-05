@@ -11,11 +11,12 @@
         <item name="colorPrimaryDark">#0288D1</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
-
     </style>
-    <style name="TextLabel" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
-        <item name="colorControlActivated">#FFCC00</item>
+    <style name="MyAppTheme" parent="AppTheme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@drawable/bg</item>
+        <item name="android:windowContentOverlay">@null</item>
     </style>
 
 </resources>

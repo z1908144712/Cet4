@@ -1,18 +1,16 @@
 package com.example.bishe.cet4.activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
 
 import com.example.bishe.cet4.R;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
-import com.wang.avi.AVLoadingIndicatorView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,45 +20,49 @@ import java.util.List;
 import java.util.Map;
 
 public class LoadingRateOfLearning extends Activity {
-    private AVLoadingIndicatorView avLoadingIndicatorView=null;
     private List<String> groupName=null;
     private List<List<Map<String,String>>> childContext=null;
     private SQLiteDatabase db=null;
     private DBHelper dbHelper=null;
+    private Handler handler=null;
+    private int words_count;
+    private int learned_words_count;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.loading_layout);
-        avLoadingIndicatorView=findViewById(R.id.id_loading);
-        WindowManager windowManager=(WindowManager) getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics=new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        avLoadingIndicatorView.setPadding(displayMetrics.widthPixels/2-48,0,0,0);
-        avLoadingIndicatorView.smoothToShow();
-        //初始化数据库
-        initDataBase();
-        //初始化数据
-        initData();
-        //跳转
-        Thread thread=new Thread(new Runnable() {
+        setContentView(R.layout.circle_loading_layout);
+        handler=new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what){
+                    case 1:
+                        //跳转
+                        Intent intent=new Intent();
+                        intent.setClass(LoadingRateOfLearning.this,RateOfLearningActivity.class);
+                        Bundle bundle=new Bundle();
+                        bundle.putSerializable("groupName",(Serializable) groupName);
+                        bundle.putSerializable("childContext", (Serializable) childContext);
+                        intent.putExtra("RateOfLearning",bundle);
+                        intent.putExtra("words_count",words_count);
+                        intent.putExtra("learned_words_count",learned_words_count);
+                        startActivity(intent);
+                        finish();
+                        break;
+                }
+                super.handleMessage(msg);
+            }
+        };
+       new Thread(new Runnable() {
             @Override
             public void run() {
-                Intent intent=new Intent();
-                intent.setClass(LoadingRateOfLearning.this,RateOfLearningActivity.class);
-                Bundle bundle=new Bundle();
-                bundle.putSerializable("groupName",(Serializable) groupName);
-                bundle.putSerializable("childContext", (Serializable) childContext);
-                intent.putExtra("RateOfLearning",bundle);
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                startActivity(intent);
-                finish();
+                //初始化数据库
+                initDataBase();
+                //初始化数据
+                initData();
+                handler.sendEmptyMessage(1);
             }
-        });
-        thread.start();
+        }).start();
     }
 
     private void initDataBase(){
@@ -70,6 +72,8 @@ public class LoadingRateOfLearning extends Activity {
     }
 
     private void initData(){
+        words_count=dbHelper.selectCountFromWords();
+        learned_words_count=dbHelper.select_learned_words_num();
         groupName=new ArrayList<>();
         childContext=new ArrayList<>();
         List<String> learn_word=dbHelper.selectAllLearnWord();

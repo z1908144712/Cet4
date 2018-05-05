@@ -4,15 +4,32 @@
     android:layout_height="match_parent"
     android:background="@color/gray_white"
     android:orientation="vertical">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:gravity="center"
+    <LinearLayout
         android:background="@color/colorPrimary"
-        android:textSize="20dp"
-        android:textColor="@color/fontWhite"
-        android:textStyle="bold"
-        android:text="单词收藏"/>
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+        <ImageView
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/id_back"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_keyboard_arrow_left"/>
+        <TextView
+            android:layout_weight="8"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textSize="20dp"
+            android:textColor="@color/fontWhite"
+            android:textStyle="bold"
+            android:text="单词收藏"/>
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
     <ListView
         android:id="@+id/id_word_collection_list"
         android:layout_width="match_parent"

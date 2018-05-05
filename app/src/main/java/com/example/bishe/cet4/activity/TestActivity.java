@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
@@ -21,17 +22,18 @@ import com.example.bishe.cet4.function.WordTimer;
 import com.example.bishe.cet4.object.Question;
 
 public class TestActivity extends Activity implements View.OnClickListener{
-    private SQLiteDatabase db;
-    private DBHelper dbHelper;
-    private TextView textView_question;
-    private Button button_item_1;
-    private Button button_item_2;
-    private Button button_item_3;
-    private Button button_item_4;
-    private String []words_num_array;
-    private Question question;
-    private GetQuestion getQuestion;
-    private WordTimer wordTimer;
+    private SQLiteDatabase db=null;
+    private DBHelper dbHelper=null;
+    private TextView textView_question=null;
+    private Button button_item_1=null;
+    private Button button_item_2=null;
+    private Button button_item_3=null;
+    private Button button_item_4=null;
+    private String []words_num_array=null;
+    private Question question=null;
+    private GetQuestion getQuestion=null;
+    private WordTimer wordTimer=null;
+    private ProgressBar progressBar=null;
     private int words_index;
     private int right_answer;
     private int right_answer_num;
@@ -65,6 +67,7 @@ public class TestActivity extends Activity implements View.OnClickListener{
         button_item_2=findViewById(R.id.id_item_2);
         button_item_3=findViewById(R.id.id_item_3);
         button_item_4=findViewById(R.id.id_item_4);
+        progressBar=findViewById(R.id.id_progressBar);
     }
 
     private void initData(){
@@ -73,6 +76,7 @@ public class TestActivity extends Activity implements View.OnClickListener{
         type=intent.getIntExtra("type",-1);
         words_num_array=dbHelper.select_words_plan_byId(id).split(",");
         words_count=words_num_array.length;
+        progressBar.setMax(words_count);
         words_index=0;
         wordTimer=new WordTimer();
         wordTimer.startTimer();
@@ -87,6 +91,7 @@ public class TestActivity extends Activity implements View.OnClickListener{
     }
 
     private void setQuestion(){
+        progressBar.setProgress(words_index+1);
         getQuestion=new GetQuestion(dbHelper,Integer.valueOf(words_num_array[words_index]),type);
         type3_random_num=getQuestion.getRandom_num();
         question=getQuestion.getQuestion();
@@ -107,22 +112,25 @@ public class TestActivity extends Activity implements View.OnClickListener{
     }
 
     private void addWrongNum(){
-        System.out.println(type3_random_num);
+        String english;
         switch (type3_random_num){
             case GetQuestion.TYPE_1:
-                dbHelper.addWrongNumWordCollection(question.getItems()[right_answer]);
+                english=question.getItems()[right_answer];
+                dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
                 break;
             case GetQuestion.TYPE_2:
-                dbHelper.addWrongNumWordCollection(question.getQuestion());
+                english=question.getQuestion();
+                dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
                 break;
             default:
-                System.out.println(type);
                 switch (type){
                     case GetQuestion.TYPE_1:
-                        dbHelper.addWrongNumWordCollection(question.getItems()[right_answer]);
+                        english=question.getItems()[right_answer];
+                        dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
                         break;
                     case GetQuestion.TYPE_2:
-                        dbHelper.addWrongNumWordCollection(question.getQuestion());
+                        english=question.getQuestion();
+                        dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
                         break;
                 }
                 break;

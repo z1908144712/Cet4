@@ -12,18 +12,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 import com.example.bishe.cet4.function.GetQuestion;
+import com.example.bishe.cet4.function.MyToast;
+import com.example.bishe.cet4.function.NetWork;
 import com.example.bishe.cet4.function.WordTimer;
 import com.example.bishe.cet4.object.Question;
 import com.example.bishe.cet4.object.Word;
+import com.example.bishe.cet4.tabs.TestFragment;
 import com.youdao.sdk.app.Language;
 import com.youdao.sdk.app.LanguageUtils;
 import com.youdao.sdk.common.Constants;
@@ -52,13 +57,21 @@ public class WordActivity extends Activity implements View.OnClickListener{
     private Word word=null;
     private String []words_index_array=null;
     private int words_num=0;
-    private int word_index=0;
+    private int word_index;
     private Question question;
     private GetQuestion getQuestion;
     private boolean haveChoice=false;
     private WordTimer wordTimer=null;
     private String previous_time=null;
     private Handler handler=null;
+    private ProgressBar progressBar=null;
+    private SharedPreferences sharedPreferences=null;
+    private SharedPreferences.Editor editor=null;
+    private int mode;
+    private int day;
+    public static final int MODE_1=1;
+    public static final int MODE_2=2;
+    public static final int MODE_3=3;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,6 +106,7 @@ public class WordActivity extends Activity implements View.OnClickListener{
         button_item_4=findViewById(R.id.id_item_4);
         button_unknown=findViewById(R.id.id_unknown);
         button_next=findViewById(R.id.id_next_word);
+        progressBar=findViewById(R.id.id_progressBar);
     }
 
     private void initEvents(){
@@ -106,10 +120,27 @@ public class WordActivity extends Activity implements View.OnClickListener{
     }
 
     private void initData(){
-        SharedPreferences sharedPreferences=getSharedPreferences("plandays",Context.MODE_PRIVATE);
+        mode=getIntent().getIntExtra("mode",0);
+        sharedPreferences=getSharedPreferences("plandays",Context.MODE_PRIVATE);
+        editor=sharedPreferences.edit();
         previous_time=sharedPreferences.getString("previous_time",null);
-        words_index_array=dbHelper.selectWordPlanByTime(previous_time).split(",");
-        words_num=words_index_array.length;
+        if(mode==MODE_1){
+            words_index_array=dbHelper.selectWordPlanByTime(previous_time).split(",");
+            words_num=words_index_array.length;
+            word_index=sharedPreferences.getInt("word_index",0);
+            progressBar.setMax(words_num);
+            day=dbHelper.selectCountFromWordsPlan();
+        }else if(mode==MODE_2){
+            day=getIntent().getIntExtra("day",-1);
+            words_index_array=dbHelper.select_words_plan_byId(day).split(",");
+            words_num=words_index_array.length;
+            word_index=0;
+            progressBar.setMax(words_num);
+        }else if(mode==MODE_3){
+
+        }else{
+            finish();
+        }
         wordTimer=new WordTimer();
         wordTimer.startTimer();
     }
@@ -129,6 +160,7 @@ public class WordActivity extends Activity implements View.OnClickListener{
 
 
     private void setWord(){
+        progressBar.setProgress(word_index+1);
         haveChoice=false;
         word=dbHelper.selectWordById(words_index_array[word_index]);
         if(null!=word){
@@ -148,14 +180,38 @@ public class WordActivity extends Activity implements View.OnClickListener{
     private void nextWord(){
         word_index++;
         if(word_index<words_num){
+            if(mode==MODE_1){
+                editor.putInt("word_index",word_index);
+                editor.commit();
+            }
             setWord();
         }else{
+            if(mode==MODE_1){
+                editor.putInt("word_index",0);
+                editor.commit();
+            }
             wordTimer.stopTimer();
             new AlertDialog.Builder(this)
                     .setTitle("提示")
-                    .setMessage("本次学习时长为"+wordTimer.getTime_string())
+                    .setMessage("你已完成今天的计划，是否开始今天的测试？")
                     .setCancelable(false)
                     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            setLearnedTime();
+                            View view= LayoutInflater.from(WordActivity.this).inflate(R.layout.test_type_layout,null);
+                            TextView tv_type1=view.findViewById(R.id.id_test_type_1);
+                            TextView tv_type2=view.findViewById(R.id.id_test_type_2);
+                            TextView tv_type3=view.findViewById(R.id.id_test_type_3);
+                            tv_type1.setOnClickListener(new WordActivity.TypeOnClickListener());
+                            tv_type2.setOnClickListener(new WordActivity.TypeOnClickListener());
+                            tv_type3.setOnClickListener(new WordActivity.TypeOnClickListener());
+                            new AlertDialog.Builder(getApplicationContext())
+                                    .setView(view)
+                                    .create().show();
+                        }
+                    })
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             setLearnedTime();
@@ -177,7 +233,7 @@ public class WordActivity extends Activity implements View.OnClickListener{
 
 
     private void setUnknownWord(){
-        dbHelper.addWrongNumWordCollection(word.getEnglish());
+        dbHelper.addWrongNumWordCollection(word.getId(),word.getEnglish());
     }
 
     private void setLearnedTime(){
@@ -186,12 +242,17 @@ public class WordActivity extends Activity implements View.OnClickListener{
     }
 
     private void showWordDetail(){
-        Intent intent=new Intent();
-        intent.setClass(this,WordDetailActivity.class);
-        intent.putExtra("keyword",word.getEnglish());
-        intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
-        intent.putExtra("type_show",WordDetailActivity.TYPE_WORD);
-        startActivity(intent);
+        if(NetWork.isNetworkConnected(getApplicationContext())){
+            Intent intent=new Intent();
+            intent.setClass(this,WordDetailActivity.class);
+            intent.putExtra("keyword",word.getEnglish());
+            intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
+            intent.putExtra("type_show",WordDetailActivity.TYPE_WORD);
+            startActivity(intent);
+        }else{
+            new MyToast(WordActivity.this,MyToast.NO_NETWORK).show();
+        }
+
     }
 
     @Override
@@ -263,5 +324,32 @@ public class WordActivity extends Activity implements View.OnClickListener{
                     .show();
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    public class TypeOnClickListener implements View.OnClickListener{
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.id_test_type_1:
+                    jump(GetQuestion.TYPE_1);
+                    break;
+                case R.id.id_test_type_2:
+                    jump(GetQuestion.TYPE_2);
+                    break;
+                case R.id.id_test_type_3:
+                    jump(GetQuestion.TYPE_3);
+                    break;
+            }
+        }
+    }
+
+    public void jump(int type){
+        Intent intent=new Intent();
+        intent.putExtra("id",day);
+        intent.putExtra("type",type);
+        intent.setClass(WordActivity.this,TestActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

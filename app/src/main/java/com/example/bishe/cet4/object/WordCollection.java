@@ -1,12 +1,25 @@
 package com.example.bishe.cet4.object;
 
-public class WordCollection {
-    private String english;
-    private int wrong_num;
 
-    public WordCollection(String english, int wrong_num) {
+import java.util.Objects;
+
+public class WordCollection{
+    private Integer id;
+    private String english;
+    private Integer wrong_num;
+
+    public WordCollection(Integer id,String english, Integer wrong_num) {
+        this.id=id;
         this.english = english;
         this.wrong_num = wrong_num;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getEnglish() {
@@ -17,8 +30,28 @@ public class WordCollection {
         this.english = english;
     }
 
-    public int getWrong_num() {
+    public Integer getWrong_num() {
         return wrong_num;
+    }
+
+    public void setWrong_num(Integer wrong_num) {
+        this.wrong_num = wrong_num;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WordCollection that = (WordCollection) o;
+        return id==that.id&&
+                english.equals(that.english) &&
+                wrong_num.equals(that.wrong_num);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(english, wrong_num);
     }
 
     public void setWrong_num(int wrong_num) {

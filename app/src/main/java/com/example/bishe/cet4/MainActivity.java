@@ -1,6 +1,7 @@
 package com.example.bishe.cet4;
 
-import android.graphics.Color;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -10,11 +11,9 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.example.bishe.cet4.database.AssetsDatabaseManager;
-import com.example.bishe.cet4.tabs.LearnFragment;
+import com.example.bishe.cet4.tabs.ReviewFragment;
 import com.example.bishe.cet4.tabs.PersonalFragment;
 import com.example.bishe.cet4.tabs.SearchFragment;
 import com.example.bishe.cet4.tabs.TestFragment;
@@ -26,25 +25,25 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private FragmentTransaction fragmentTransaction;
     //四个Tab对应的布局
     private LinearLayout tab_word;
-    private LinearLayout tab_learn;
+    private LinearLayout tab_review;
     private LinearLayout tab_search;
     private LinearLayout tab_test;
     private LinearLayout tab_personal;
     //四个Tab对应的Fragment
     private Fragment fragment_word;
-    private Fragment fragment_learn;
+    private Fragment fragment_review;
     private Fragment fragment_search;
     private Fragment fragment_test;
     private Fragment fragment_personal;
     //四个Tab对应的ImageButton
     private ImageButton imageButton_word;
-    private ImageButton imageButton_learn;
+    private ImageButton imageButton_review;
     private ImageButton imageButton_search;
     private ImageButton imageButton_test;
     private ImageButton imageButton_personal;
     //四个Tab对应的TextView
     private TextView textView_word;
-    private TextView textView_learn;
+    private TextView textView_review;
     private TextView textView_search;
     private TextView textView_test;
     private TextView textView_personal;
@@ -60,22 +59,37 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         initFragmentManager();
         //初始化事件
         initEvents();
+        //启动同步服务
+        if(isLogin()){
+            startSyncService();
+        }
+    }
 
+    private void startSyncService(){
+        Intent intent=new Intent("android.intent.action.syncService");
+        intent.setPackage(getPackageName());
+        stopService(intent);
+        startService(intent);
+    }
+
+    private boolean isLogin(){
+        SharedPreferences sharedPreferences=getSharedPreferences("login",MODE_PRIVATE);
+        return sharedPreferences.getBoolean("isLogin",false);
     }
 
     private void initViews(){
         tab_word=(LinearLayout) findViewById(R.id.id_tab_word);
-        tab_learn=(LinearLayout)findViewById(R.id.id_tab_learn);
+        tab_review =(LinearLayout)findViewById(R.id.id_tab_review);
         tab_search=(LinearLayout)findViewById(R.id.id_tab_search);
         tab_test=(LinearLayout)findViewById(R.id.id_tab_test);
         tab_personal=(LinearLayout)findViewById(R.id.id_tab_personal);
         imageButton_word=(ImageButton)findViewById(R.id.id_tab_word_img);
-        imageButton_learn=(ImageButton)findViewById(R.id.id_tab_learn_img);
+        imageButton_review =(ImageButton)findViewById(R.id.id_tab_learn_img);
         imageButton_search=(ImageButton)findViewById(R.id.id_tab_search_img);
         imageButton_test=(ImageButton)findViewById(R.id.id_tab_test_img);
         imageButton_personal=(ImageButton)findViewById(R.id.id_tab_personal_img);
         textView_word=(TextView)findViewById(R.id.id_text_word);
-        textView_learn=(TextView)findViewById(R.id.id_text_learn);
+        textView_review =(TextView)findViewById(R.id.id_text_learn);
         textView_search=(TextView)findViewById(R.id.id_text_search);
         textView_test=(TextView)findViewById(R.id.id_text_test);
         textView_personal=(TextView)findViewById(R.id.id_text_personal);
@@ -89,7 +103,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
     private void initEvents(){
         tab_word.setOnClickListener(this);
-        tab_learn.setOnClickListener(this);
+        tab_review.setOnClickListener(this);
         tab_search.setOnClickListener(this);
         tab_test.setOnClickListener(this);
         tab_personal.setOnClickListener(this);
@@ -101,13 +115,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             case R.id.id_tab_word:
                 selectTab(0);
                 break;
-            case R.id.id_tab_learn:
+            case R.id.id_tab_test:
                 selectTab(1);
                 break;
             case R.id.id_tab_search:
                 selectTab(2);
                 break;
-            case R.id.id_tab_test:
+            case R.id.id_tab_review:
                 selectTab(3);
                 break;
             case R.id.id_tab_personal:
@@ -118,14 +132,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     private void resetImgs(){
         imageButton_word.setBackgroundResource(R.drawable.ic_tab_word);
-        imageButton_learn.setBackgroundResource(R.drawable.ic_tab_learn);
+        imageButton_review.setBackgroundResource(R.drawable.ic_tab_learn);
         imageButton_search.setBackgroundResource(R.drawable.ic_tab_search);
         imageButton_test.setBackgroundResource(R.drawable.ic_tab_test);
         imageButton_personal.setBackgroundResource(R.drawable.ic_tab_personal);
         textView_word.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
         textView_word.setTextSize(12);
-        textView_learn.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
-        textView_learn.setTextSize(12);
+        textView_review.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
+        textView_review.setTextSize(12);
         textView_search.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
         textView_search.setTextSize(12);
         textView_test.setTextColor(getResources().getColor(R.color.tabSelectFontColor));
@@ -137,8 +151,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         if(fragment_word!=null){
             transaction.hide(fragment_word);
         }
-        if(fragment_learn!=null){
-            transaction.hide(fragment_learn);
+        if(fragment_review !=null){
+            transaction.hide(fragment_review);
         }
         if(fragment_search!=null){
             transaction.hide(fragment_search);
@@ -166,14 +180,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             case 1:
-                imageButton_learn.setBackgroundResource(R.drawable.ic_tab_learn_select);
-                textView_learn.setTextColor(getResources().getColor(R.color.colorPrimary));
-                textView_learn.setTextSize(14);
-                if(fragment_learn==null){
-                    fragment_learn=new LearnFragment();
-                    fragmentTransaction.add(R.id.id_fragments,fragment_learn);
+                imageButton_test.setBackgroundResource(R.drawable.ic_tab_test_select);
+                textView_test.setTextColor(getResources().getColor(R.color.colorPrimary));
+                textView_test.setTextSize(14);
+                if(fragment_test==null){
+                    fragment_test=new TestFragment();
+                    fragmentTransaction.add(R.id.id_fragments,fragment_test);
                 }else{
-                    fragmentTransaction.show(fragment_learn);
+                    fragmentTransaction.show(fragment_test);
                 }
                 break;
             case 2:
@@ -188,14 +202,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 }
                 break;
             case 3:
-                imageButton_test.setBackgroundResource(R.drawable.ic_tab_test_select);
-                textView_test.setTextColor(getResources().getColor(R.color.colorPrimary));
-                textView_test.setTextSize(14);
-                if(fragment_test==null){
-                    fragment_test=new TestFragment();
-                    fragmentTransaction.add(R.id.id_fragments,fragment_test);
+                imageButton_review.setBackgroundResource(R.drawable.ic_tab_learn_select);
+                textView_review.setTextColor(getResources().getColor(R.color.colorPrimary));
+                textView_review.setTextSize(14);
+                if(fragment_review ==null){
+                    fragment_review =new ReviewFragment();
+                    fragmentTransaction.add(R.id.id_fragments, fragment_review);
                 }else{
-                    fragmentTransaction.show(fragment_test);
+                    fragmentTransaction.show(fragment_review);
                 }
                 break;
             case 4:

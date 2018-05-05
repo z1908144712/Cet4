@@ -8,11 +8,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
+import android.view.View;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.bishe.cet4.R;
@@ -36,6 +38,7 @@ public class WordDetailActivity extends Activity {
     private Translator translator=null;
     private Handler handler=null;
     private String keyword =null;
+    private ProgressBar progressBar=null;
     private int type;
     private int type_show;
     public static final int TYPE_ENGLISH=0;
@@ -56,6 +59,7 @@ public class WordDetailActivity extends Activity {
 
     private void initViews(){
         webView=findViewById(R.id.id_web_view);
+        progressBar=findViewById(R.id.id_progressBar);
     }
 
     @Override
@@ -125,7 +129,14 @@ public class WordDetailActivity extends Activity {
                                 if(type_show==TYPE_WORD){
                                     view.loadUrl(JSFilter.jsfilter_word);
                                 }
-//                                view.loadUrl(JSFilter.jsfilter_html);
+                                if(newProgress==100){
+                                    webView.setVisibility(View.VISIBLE);
+                                    progressBar.setVisibility(View.INVISIBLE);
+                                }else{
+                                    webView.setVisibility(View.INVISIBLE);
+                                    progressBar.setVisibility(View.VISIBLE);
+                                    progressBar.setProgress(newProgress);
+                                }
                             }
 
                             @Override
@@ -145,7 +156,6 @@ public class WordDetailActivity extends Activity {
                             }
                         });
                         webView.loadUrl(translate.getDeeplink());
-                        System.out.println(translate.getDeeplink());
                     }
                 });
             }

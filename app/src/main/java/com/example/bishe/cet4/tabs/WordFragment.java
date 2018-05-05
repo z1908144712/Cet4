@@ -42,17 +42,17 @@ public class WordFragment extends Fragment implements View.OnClickListener{
         //初始化控件
         initViews(view);
         //初始化事件
-        initEvents(view);
-        //初始化数据
-        initData();
+        initEvents();
         return view;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        //初始化数据
         initData();
+        super.onStart();
     }
+
 
     private void initDatabase(){
         AssetsDatabaseManager assetsDatabaseManager=AssetsDatabaseManager.getAssetsDatabaseManager();
@@ -68,7 +68,7 @@ public class WordFragment extends Fragment implements View.OnClickListener{
         button_begin_learn_today=view.findViewById(R.id.id_begin_learn_today);
     }
 
-    private void initEvents(View view){
+    private void initEvents(){
         button_begin_learn_today.setOnClickListener(this);
     }
 
@@ -77,8 +77,12 @@ public class WordFragment extends Fragment implements View.OnClickListener{
         textView_learned_days.setText(String.valueOf(dbHelper.selectCountFromWordsPlan()));
         SharedPreferences sharedPreferences=getActivity().getSharedPreferences("plandays",Context.MODE_PRIVATE);
         String previous_time=sharedPreferences.getString("previous_time",null);
+        int word_index=sharedPreferences.getInt("word_index",0);
         textView_learn_words_today.setText(String.valueOf(dbHelper.selectCountToday(previous_time)));
         textView_learned_time_today.setText(dbHelper.selectLearnTimeFromWordPlanByTime(previous_time));
+        if(word_index>0){
+            button_begin_learn_today.setText("继续学习");
+        }
     }
 
     @Override
@@ -87,6 +91,7 @@ public class WordFragment extends Fragment implements View.OnClickListener{
             case R.id.id_begin_learn_today:
                 Intent intent=new Intent();
                 intent.setClass(getContext(), WordActivity.class);
+                intent.putExtra("mode",WordActivity.MODE_1);
                 startActivity(intent);
                 break;
         }

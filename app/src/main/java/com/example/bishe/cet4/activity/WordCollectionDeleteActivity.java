@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
@@ -33,6 +34,7 @@ public class WordCollectionDeleteActivity extends Activity implements View.OnCli
     private Question question=null;
     private GetQuestion getQuestion=null;
     private WordTimer wordTimer=null;
+    private ProgressBar progressBar=null;
     private int id;
     private int right_answer;
     private int right_num;
@@ -66,6 +68,7 @@ public class WordCollectionDeleteActivity extends Activity implements View.OnCli
         button_item_2=findViewById(R.id.id_item_2);
         button_item_3=findViewById(R.id.id_item_3);
         button_item_4=findViewById(R.id.id_item_4);
+        progressBar=findViewById(R.id.id_progressBar);
     }
 
     private void initEvents(){
@@ -82,6 +85,7 @@ public class WordCollectionDeleteActivity extends Activity implements View.OnCli
         right_num=0;
         question_index=0;
         question_num=5;
+        progressBar.setMax(question_num);
         getEnglish();
         getQuestion=new GetQuestion(dbHelper,id,GetQuestion.TYPE_3);
         wordTimer.startTimer();
@@ -89,6 +93,7 @@ public class WordCollectionDeleteActivity extends Activity implements View.OnCli
     }
 
     private void setQuestion(){
+        progressBar.setProgress(question_index+1);
         question=getQuestion.getQuestion();
         right_answer=question.getRight_answer();
         textView_question.setText(question.getQuestion());

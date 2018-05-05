@@ -4,29 +4,44 @@
     android:layout_height="match_parent"
     android:background="@color/gray_white"
     android:orientation="vertical">
-    <Button
+    <TextView
+        android:layout_weight="1"
         android:id="@+id/id_test_type_1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/fontWhite"
-        android:layout_marginBottom="10dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:textStyle="bold"
         android:textSize="20sp"
         android:text="中译英"/>
-    <Button
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:background="@drawable/dash_line"/>
+    <TextView
+        android:layout_weight="1"
         android:id="@+id/id_test_type_2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/fontWhite"
-        android:layout_marginBottom="10dp"
+        android:layout_height="0dp"
         android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
         android:textStyle="bold"
         android:text="英译中"/>
-    <Button
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dip"
+        android:background="@drawable/dash_line"/>
+    <TextView
+        android:gravity="center"
+        android:layout_weight="1"
         android:id="@+id/id_test_type_3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/fontWhite"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_height="0dp"
         android:textSize="20sp"
         android:textStyle="bold"
         android:text="中译英|英译中"/>

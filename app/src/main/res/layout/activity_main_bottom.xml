@@ -36,25 +36,25 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:id="@+id/id_tab_learn"
+        android:id="@+id/id_tab_test"
         android:gravity="center"
         android:orientation="vertical"
         >
         <ImageButton
-            android:id="@+id/id_tab_learn_img"
+            android:id="@+id/id_tab_test_img"
             android:clickable="false"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:background="@drawable/ic_tab_learn"
+            android:background="@drawable/ic_tab_test"
             />
         <TextView
-            android:id="@+id/id_text_learn"
+            android:id="@+id/id_text_test"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/tabSelectFontColor"
             android:textStyle="bold"
             android:textSize="12sp"
-            android:text="学习"
+            android:text="测试"
             />
     </LinearLayout>
     <LinearLayout
@@ -82,31 +82,32 @@
             android:text="搜索"
             />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:id="@+id/id_tab_test"
-        android:gravity="center"
-        android:orientation="vertical"
-        >
-        <ImageButton
-            android:id="@+id/id_tab_test_img"
-            android:clickable="false"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:background="@drawable/ic_tab_test"
-            />
-        <TextView
-            android:id="@+id/id_text_test"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/tabSelectFontColor"
-            android:textStyle="bold"
-            android:textSize="12sp"
-            android:text="测试"
-            />
-    </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/id_tab_review"
+            android:gravity="center"
+            android:orientation="vertical"
+            >
+            <ImageButton
+                android:id="@+id/id_tab_learn_img"
+                android:clickable="false"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/ic_tab_learn"
+                />
+            <TextView
+                android:id="@+id/id_text_learn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/tabSelectFontColor"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:text="复习"
+                />
+        </LinearLayout>
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"

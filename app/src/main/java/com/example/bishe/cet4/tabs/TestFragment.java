@@ -43,11 +43,13 @@ public class TestFragment extends Fragment implements View.OnClickListener{
     private SQLiteDatabase db=null;
     private DBHelper dbHelper=null;
     private AlertDialog alertDialog=null;
-    private int plandays;
+    private int plandays=-1;
+    private int days;
     private int column;
     private int row;
     private int count;
     private int day;
+    private boolean isChanged=true;
 
     @Nullable
     @Override
@@ -55,10 +57,6 @@ public class TestFragment extends Fragment implements View.OnClickListener{
         View view=inflater.inflate(R.layout.activity_tab_test,null);
         //初始化数据库
         initDataBase();
-        //初始化数据
-        initData();
-        //初始化控件
-        initViews(view.findViewById(R.id.id_test_list));
         return view;
     }
 
@@ -70,13 +68,22 @@ public class TestFragment extends Fragment implements View.OnClickListener{
 
     private void initData(){
         SharedPreferences sharedPreferences=getContext().getSharedPreferences("plandays", Context.MODE_PRIVATE);
-        plandays=sharedPreferences.getInt("plandays",-1);
-        column=4;
-        row=(plandays+column)/column;
-        count=dbHelper.selectCountFromWordsPlan();
+        days=sharedPreferences.getInt("plandays",-1);
+        if(plandays==-1||plandays!=days) {
+            plandays = days;
+            column=4;
+            row=plandays%column==0?plandays/column:(plandays/column+1);
+            count=dbHelper.selectCountFromWordsPlan();
+            isChanged=true;
+        }else{
+            isChanged=false;
+        }
     }
 
     private void initViews(View view){
+        if(!isChanged){
+            return;
+        }
         LinearLayout linearLayout_test_list=new LinearLayout(view.getContext());
         linearLayout_test_list.setOrientation(LinearLayout.VERTICAL);
         linearLayout_test_list.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -110,6 +117,7 @@ public class TestFragment extends Fragment implements View.OnClickListener{
             }
             linearLayout_test_list.addView(linearLayout);
         }
+        ((ScrollView)view).removeAllViews();
         ((ScrollView)view).addView(linearLayout_test_list);
     }
 
@@ -125,12 +133,12 @@ public class TestFragment extends Fragment implements View.OnClickListener{
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         View view=LayoutInflater.from(getContext()).inflate(R.layout.test_type_layout,null);
-                        Button button_type1=view.findViewById(R.id.id_test_type_1);
-                        Button button_type2=view.findViewById(R.id.id_test_type_2);
-                        Button button_type3=view.findViewById(R.id.id_test_type_3);
-                        button_type1.setOnClickListener(new TypeOnClickListener());
-                        button_type2.setOnClickListener(new TypeOnClickListener());
-                        button_type3.setOnClickListener(new TypeOnClickListener());
+                        TextView tv_type1=view.findViewById(R.id.id_test_type_1);
+                        TextView tv_type2=view.findViewById(R.id.id_test_type_2);
+                        TextView tv_type3=view.findViewById(R.id.id_test_type_3);
+                        tv_type1.setOnClickListener(new TypeOnClickListener());
+                        tv_type2.setOnClickListener(new TypeOnClickListener());
+                        tv_type3.setOnClickListener(new TypeOnClickListener());
                         alertDialog=new AlertDialog.Builder(getContext()).create();
                         alertDialog.setView(view);
                         alertDialog.show();
@@ -169,5 +177,25 @@ public class TestFragment extends Fragment implements View.OnClickListener{
                     break;
             }
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //初始化数据
+        initData();
+        //初始化控件
+        initViews(getView().findViewById(R.id.id_test_list));
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        if(!hidden){
+            //初始化数据
+            initData();
+            //初始化控件
+            initViews(getView().findViewById(R.id.id_test_list));
+        }
+        super.onHiddenChanged(hidden);
     }
 }

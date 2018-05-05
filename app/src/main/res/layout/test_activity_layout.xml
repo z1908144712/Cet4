@@ -13,6 +13,12 @@
         android:textAllCaps="false"
         android:textSize="20sp"
         android:gravity="center"/>
+    <ProgressBar
+        android:id="@+id/id_progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:progressDrawable="@drawable/progressbar_bg"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -23,13 +29,18 @@
             android:layout_height="match_parent"
             android:textStyle="bold"
             android:gravity="center"
-            android:textSize="40sp"
+            android:textSize="30sp"
             android:textColor="#000000"/>
     </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/dash_line"/>
     <LinearLayout
         android:layout_weight="8"
         android:orientation="vertical"
         android:layout_margin="30dp"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="0dp">
         <Button
@@ -42,7 +53,7 @@
             android:textColor="@color/fontWhite"
             android:layout_marginBottom="10dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:background="@drawable/red_button_bg" />
         <Button
             android:id="@+id/id_item_2"
@@ -51,7 +62,7 @@
             android:textColor="@color/fontWhite"
             android:textAllCaps="false"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:paddingLeft="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
@@ -63,7 +74,7 @@
             android:textColor="@color/fontWhite"
             android:textAllCaps="false"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:paddingLeft="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
@@ -75,7 +86,7 @@
             android:textColor="@color/fontWhite"
             android:textAllCaps="false"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:paddingLeft="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"

@@ -25,10 +25,15 @@ import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
 import com.example.bishe.cet4.activity.WordDetailActivity;
+import com.example.bishe.cet4.adapter.SearchHistorySimpleAdapter;
+import com.example.bishe.cet4.adapter.WordSuggestionAdapter;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
+import com.example.bishe.cet4.function.MyToast;
+import com.example.bishe.cet4.function.NetWork;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -38,7 +43,7 @@ import java.util.regex.Pattern;
  * Created by Skywilling on 2018/1/2.
  */
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements SearchHistorySimpleAdapter.CallBack{
     private EditText editText_input=null;
     private Drawable drawable_search_icon=null;
     private Drawable drawable_search_delete_btn=null;
@@ -48,6 +53,7 @@ public class SearchFragment extends Fragment {
     private DBHelper dbHelper=null;
     private SQLiteDatabase db=null;
     private String keyword=null;
+    private List<Map<String,String>> history_datas=null;
 
     @Nullable
     @Override
@@ -59,6 +65,8 @@ public class SearchFragment extends Fragment {
         initView(view);
         //初始化事件
         initEvent();
+        //初始化历史记录
+        initSearchHistory();
         return view;
     }
     private void initDataBase(){
@@ -76,6 +84,38 @@ public class SearchFragment extends Fragment {
         drawable_search_delete_btn.setBounds(0,0,drawable_search_delete_btn.getIntrinsicWidth(),drawable_search_delete_btn.getIntrinsicHeight());
         editText_input.setCompoundDrawables(drawable_search_icon,null,null,null);
     }
+
+    private void initSearchHistory(){
+        List<String> texts=dbHelper.select_from_search_history();
+        history_datas=new ArrayList<>();
+        for(int i=0;i<texts.size();i++){
+            Map<String,String> map=new HashMap<>();
+            map.put("text",texts.get(i));
+            history_datas.add(map);
+        }
+        if(history_datas.size()==0){
+            listView_suggestion.setAdapter(null);
+        }else {
+            listView_suggestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if(position<history_datas.size()){
+                        Intent intent=new Intent();
+                        intent.setClass(getContext(), WordDetailActivity.class);
+                        intent.putExtra("keyword",history_datas.get(position).get("text"));
+                        intent.putExtra("type",WordDetailActivity.TYPE_AUTO);
+                        intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
+                        startActivity(intent);
+                    }else {
+                        dbHelper.delete_all_search_history();
+                        initSearchHistory();
+                    }
+                }
+            });
+            listView_suggestion.setAdapter(new SearchHistorySimpleAdapter(getContext(),history_datas,R.layout.search_history_item_layout,new String[]{"text"},new int[]{R.id.id_text},this));
+        }
+    }
+
     private void initEvent(){
         editText_input.addTextChangedListener(new TextWatcher() {
             @Override
@@ -86,12 +126,12 @@ public class SearchFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if(s.length()>0){
-                    keyword= inputFilter(s);
+                    keyword=inputFilter(s);
                     if(keyword.length()>0){
                         if(isLocatedSearch(keyword)){
                             //本地搜索
                             suggestWords = dbHelper.getSuggestWords(keyword);
-                            showSuggestionWords(suggestWords,keyword);
+                            showSuggestionWords();
                         }
                     }
                     editText_input.setCompoundDrawables(drawable_search_icon,null,drawable_search_delete_btn,null);
@@ -101,7 +141,7 @@ public class SearchFragment extends Fragment {
                     }else{
                         suggestWords.clear();
                     }
-                    showSuggestionWords(suggestWords,"");
+                    initSearchHistory();
                     editText_input.setCompoundDrawables(drawable_search_icon,null,null,null);
                 }
             }
@@ -132,31 +172,34 @@ public class SearchFragment extends Fragment {
         search_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent();
-                intent.setClass(getContext(), WordDetailActivity.class);
-                intent.putExtra("keyword",keyword);
-                if(isChinese(keyword)){
-                    intent.putExtra("type",WordDetailActivity.TYPE_CHINESE);
-                }else if(isEnglish(keyword)){
-                    intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
-                }else{
-                    intent.putExtra("type",WordDetailActivity.TYPE_AUTO);
+                keyword=editText_input.getText().toString().trim();
+                if(keyword==null||keyword.equals("")){
+                    return;
                 }
-                intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
-                startActivity(intent);
+                if(NetWork.isNetworkConnected(getContext())){
+                    insertHistory(keyword);
+                    Intent intent=new Intent();
+                    intent.setClass(getContext(), WordDetailActivity.class);
+                    intent.putExtra("keyword",keyword);
+                    if(isChinese(keyword)){
+                        intent.putExtra("type",WordDetailActivity.TYPE_CHINESE);
+                    }else if(isEnglish(keyword)){
+                        intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
+                    }else{
+                        intent.putExtra("type",WordDetailActivity.TYPE_AUTO);
+                    }
+                    intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
+                    startActivity(intent);
+                }else{
+                    new MyToast(getContext(),MyToast.NO_NETWORK).show();
+                }
+
             }
         });
-        listView_suggestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent=new Intent();
-                intent.setClass(getContext(), WordDetailActivity.class);
-                intent.putExtra("keyword",suggestWords.get(position).get("english"));
-                intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
-                intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
-                startActivity(intent);
-            }
-        });
+    }
+
+    private void insertHistory(String text){
+        dbHelper.insert_into_search_history(text);
     }
 
     private String inputFilter(CharSequence s){
@@ -198,52 +241,29 @@ public class SearchFragment extends Fragment {
         }
     }
 
-    private void showSuggestionWords(final List words, final String keyword){
-        listView_suggestion.setAdapter(new BaseAdapter() {
+    private void showSuggestionWords(){
+        listView_suggestion.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public int getCount() {
-                return words.size();
-            }
-
-            @Override
-            public Object getItem(int position) {
-                return null;
-            }
-
-            @Override
-            public long getItemId(int position) {
-                return 0;
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view=null;
-                if(null==convertView){
-                    LayoutInflater inflater=LayoutInflater.from(getContext());
-                    view=inflater.inflate(R.layout.word_suggestion_item_layout,null);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(NetWork.isNetworkConnected(getContext())){
+                    insertHistory(suggestWords.get(position).get("english"));
+                    Intent intent=new Intent();
+                    intent.setClass(getContext(), WordDetailActivity.class);
+                    intent.putExtra("keyword",suggestWords.get(position).get("english"));
+                    intent.putExtra("type",WordDetailActivity.TYPE_ENGLISH);
+                    intent.putExtra("type_show",WordDetailActivity.TYPE_DETAIL);
+                    startActivity(intent);
                 }else{
-                    view=convertView;
+                    new MyToast(getContext(),MyToast.NO_NETWORK).show();
                 }
-                view.setMinimumHeight(160);
-                Map<String,String> map=(Map<String, String>) words.get(position);
-                TextView english=view.findViewById(R.id.english);
-                TextView chinese=view.findViewById(R.id.chinese);
-                english.setText(matcherSearchKeyword(map.get("english"),Color.RED,keyword));
-                chinese.setText(map.get("chinese"));
-                return view;
             }
         });
+        listView_suggestion.setAdapter(new WordSuggestionAdapter(getContext(),suggestWords,R.layout.word_suggestion_item_layout,new String[]{"english","chinese"},new int[]{R.id.english,R.id.chinese},keyword));
     }
 
-    private SpannableString matcherSearchKeyword(String text,int color,String keyword){
-        SpannableString spannableString=new SpannableString(text);
-        Pattern pattern=Pattern.compile(keyword);
-        Matcher matcher=pattern.matcher(spannableString);
-        if(matcher.find()){
-            int start=matcher.start();
-            int end=matcher.end();
-            spannableString.setSpan(new ForegroundColorSpan(color),start,end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        return spannableString;
+    @Override
+    public void OnClick(View v) {
+        dbHelper.delete_search_history_by_text(history_datas.get((int)v.getTag()).get("text"));
+        initSearchHistory();
     }
 }

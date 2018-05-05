@@ -3,42 +3,51 @@ package com.example.bishe.cet4.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.DataSetObserver;
-import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
-import com.example.bishe.cet4.database.AssetsDatabaseManager;
-import com.example.bishe.cet4.database.DBHelper;
-import com.example.bishe.cet4.tabs.LearnFragment;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RateOfLearningActivity extends Activity {
+public class RateOfLearningActivity extends Activity implements View.OnClickListener{
     private ExpandableListView expandableListView=null;
     private List<String> groupName=null;
     private List<List<Map<String,String>>> childContext=null;
     private TextView textView_title=null;
+    private ImageView iv_back=null;
+    private PieChart pieChart=null;
+    private int words_count;
+    private int learned_words_count;
+    private List<PieEntry> pieEntries=null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rate_of_learning_layout);
-        //初始化数据
-        initData();
         //初始化控件
         initViews();
+        //初始化数据
+        initData();
         //初始化事件
         initEvents();
     }
@@ -48,33 +57,45 @@ public class RateOfLearningActivity extends Activity {
         Bundle bundle=intent.getBundleExtra("RateOfLearning");
         groupName= (List<String>) bundle.getSerializable("groupName");
         childContext= (List<List<Map<String, String>>>) bundle.getSerializable("childContext");
+        expandableListView.setAdapter(new RateOfLearningActivity.MyExpandableListViewAdapter());
+        words_count=intent.getIntExtra("words_count",-1);
+        learned_words_count=intent.getIntExtra("learned_words_count",-1);
+        pieEntries=new ArrayList<>();
+        pieEntries.add(new PieEntry((words_count-learned_words_count)*100.0f/words_count,"未学习"));
+        pieEntries.add(new PieEntry(learned_words_count*100.0f/words_count,"已学习"));
+        PieDataSet pieDataSet=new PieDataSet(pieEntries,"");
+        pieDataSet.setSliceSpace(3f);
+        pieDataSet.setSelectionShift(10f);
+        pieDataSet.addColor(Color.parseColor("#f17548"));
+        PieData pieData=new PieData(pieDataSet);
+        pieData.setValueFormatter(new PercentFormatter());
+        pieData.setDrawValues(true);
+        pieData.setValueTextSize(20f);
+        pieChart.setData(pieData);
     }
 
     private void initViews(){
         expandableListView=findViewById(R.id.expandableListView);
         textView_title=findViewById(R.id.id_title);
-        expandableListView.setAdapter(new RateOfLearningActivity.MyExpandableListViewAdapter());
+        iv_back=findViewById(R.id.id_back);
+        pieChart=findViewById(R.id.id_pieChart);
+        pieChart.setDescription(null);
+        pieChart.setDrawHoleEnabled(false);
+        pieChart.setDrawEntryLabels(false);
+        pieChart.setUsePercentValues(true);
     }
 
     private void initEvents(){
-        textView_title.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(textView_title.getCompoundDrawables()[0]==null){
-                    return false;
-                }else{
-                    if(event.getAction()!=MotionEvent.ACTION_DOWN){
-                        return false;
-                    }
-                    if(event.getX()<textView_title.getCompoundDrawables()[0].getBounds().width()){
-                        finish();
-                        return true;
-                    }else{
-                        return false;
-                    }
-                }
-            }
-        });
+       iv_back.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.id_back:
+                finish();
+                break;
+        }
     }
 
 

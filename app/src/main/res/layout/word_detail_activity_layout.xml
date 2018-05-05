@@ -13,6 +13,12 @@
         android:textStyle="bold"
         android:textSize="20sp"
         />
+    <ProgressBar
+        android:id="@+id/id_progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:max="100"
+        android:background="@drawable/progressbar_bg" />
     <WebView
         android:id="@+id/id_web_view"
         android:layout_width="match_parent"
