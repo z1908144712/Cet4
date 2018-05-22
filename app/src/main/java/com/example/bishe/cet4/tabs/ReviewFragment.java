@@ -11,9 +11,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.bishe.cet4.R;
-import com.example.bishe.cet4.adapter.LearnFragmentPagerAdapter;
-import com.example.bishe.cet4.fragment.FragmentOne;
-import com.example.bishe.cet4.fragment.FragmentTwo;
+import com.example.bishe.cet4.adapter.FragmentsPagerAdapter;
+import com.example.bishe.cet4.fragment.ReviewFragmentOne;
+import com.example.bishe.cet4.fragment.ReviewFragmentTwo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class ReviewFragment extends Fragment implements View.OnClickListener{
     private View tab1_line=null;
     private View tab2_line=null;
     private List<Fragment> fragments=null;
-    private LearnFragmentPagerAdapter learnFragmentPagerAdapter=null;
+    private FragmentsPagerAdapter fragmentsPagerAdapter =null;
 
     @Nullable
     @Override
@@ -43,6 +43,15 @@ public class ReviewFragment extends Fragment implements View.OnClickListener{
         //初始化数据
         initData();
         return view;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        if(!hidden){
+            //初始化数据
+            initData();
+        }
+        super.onHiddenChanged(hidden);
     }
 
     private void initViews(View view){
@@ -61,10 +70,13 @@ public class ReviewFragment extends Fragment implements View.OnClickListener{
 
     private void initData(){
         fragments=new ArrayList<>();
-        fragments.add(new FragmentOne());
-        fragments.add(new FragmentTwo());
-        learnFragmentPagerAdapter=new LearnFragmentPagerAdapter(getChildFragmentManager(),fragments);
-        viewPager.setAdapter(learnFragmentPagerAdapter);
+        fragments.add(new ReviewFragmentOne());
+        fragments.add(new ReviewFragmentTwo());
+        resetTabs();
+        tv_tab1.setTextColor(getResources().getColor(R.color.colorPrimary));
+        tab1_line.setVisibility(View.VISIBLE);
+        fragmentsPagerAdapter =new FragmentsPagerAdapter(getChildFragmentManager(),fragments);
+        viewPager.setAdapter(fragmentsPagerAdapter);
         viewPager.setCurrentItem(0);
     }
 

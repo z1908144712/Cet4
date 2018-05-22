@@ -41,6 +41,8 @@ public class TestActivity extends Activity implements View.OnClickListener{
     private int words_count;
     private int type;
     private int type3_random_num;
+    private int mode;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +76,12 @@ public class TestActivity extends Activity implements View.OnClickListener{
         Intent intent=getIntent();
         id=intent.getIntExtra("id",-1);
         type=intent.getIntExtra("type",-1);
-        words_num_array=dbHelper.select_words_plan_byId(id).split(",");
+        mode=intent.getIntExtra("mode",-1);
+        if(mode==WordActivity.MODE_3){
+            words_num_array=intent.getStringArrayExtra("words");
+        }else{
+            words_num_array=dbHelper.select_words_plan_byId(id).split(",");
+        }
         words_count=words_num_array.length;
         progressBar.setMax(words_count);
         words_index=0;
@@ -116,21 +123,21 @@ public class TestActivity extends Activity implements View.OnClickListener{
         switch (type3_random_num){
             case GetQuestion.TYPE_1:
                 english=question.getItems()[right_answer];
-                dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
+                dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english,id);
                 break;
             case GetQuestion.TYPE_2:
                 english=question.getQuestion();
-                dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
+                dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english,id);
                 break;
             default:
                 switch (type){
                     case GetQuestion.TYPE_1:
                         english=question.getItems()[right_answer];
-                        dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
+                        dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english,id);
                         break;
                     case GetQuestion.TYPE_2:
                         english=question.getQuestion();
-                        dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english);
+                        dbHelper.addWrongNumWordCollection(dbHelper.selectIdByEnglish(english),english,id);
                         break;
                 }
                 break;

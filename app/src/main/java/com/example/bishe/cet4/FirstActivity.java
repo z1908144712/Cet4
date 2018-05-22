@@ -17,12 +17,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 import com.example.bishe.cet4.function.MyToast;
 import com.example.bishe.cet4.object.AppKey;
+import com.example.bishe.cet4.object.WordPlanNum;
 import com.youdao.sdk.app.YouDaoApplication;
 
 import java.text.SimpleDateFormat;
@@ -41,8 +41,10 @@ public class FirstActivity extends Activity implements View.OnClickListener{
     private Button item_my=null;
     private Button init_word_plan_button=null;
     private EditText my_input=null;
-    private String input_plan="30";
+    private String input_plan="40";
     private int words_count=0;
+    private int plandaysmin=0;
+    private int plandaysmax=0;
     private boolean isFirst=false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +56,9 @@ public class FirstActivity extends Activity implements View.OnClickListener{
         YouDaoApplication.init(this, AppKey.appKey_YouDao);
         //初始化数据库
         initDatabase();
+        words_count=dbHelper.selectCountFromWords();
+        plandaysmin=words_count% WordPlanNum.max==0?words_count/ WordPlanNum.max:(words_count/ WordPlanNum.max)+1;
+        plandaysmax=words_count% WordPlanNum.min==0?words_count/ WordPlanNum.min:(words_count/ WordPlanNum.min)+1;
         isFirst=isFirstUse();
         if(isFirst){
             //初始化控件
@@ -82,6 +87,7 @@ public class FirstActivity extends Activity implements View.OnClickListener{
         item_my=findViewById(R.id.item_my);
         init_word_plan_button=findViewById(R.id.init_word_plan_button);
     }
+
     private void initEvents(){
         item_1.setOnClickListener(this);
         item_2.setOnClickListener(this);
@@ -99,31 +105,31 @@ public class FirstActivity extends Activity implements View.OnClickListener{
                 unSelectedAll();
                 item_1.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
                 item_1.setTextColor(Color.parseColor("#000000"));
-                input_plan="20";
+                input_plan="30";
                 break;
             case R.id.item_2:
                 unSelectedAll();
                 item_2.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
                 item_2.setTextColor(Color.parseColor("#000000"));
-                input_plan="25";
+                input_plan="35";
                 break;
             case R.id.item_3:
                 unSelectedAll();
                 item_3.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
                 item_3.setTextColor(Color.parseColor("#000000"));
-                input_plan="30";
+                input_plan="40";
                 break;
             case R.id.item_4:
                 unSelectedAll();
                 item_4.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
                 item_4.setTextColor(Color.parseColor("#000000"));
-                input_plan="35";
+                input_plan="45";
                 break;
             case R.id.item_5:
                 unSelectedAll();
                 item_5.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
                 item_5.setTextColor(Color.parseColor("#000000"));
-                input_plan="40";
+                input_plan="50";
                 break;
             case R.id.item_my:
                 unSelectedAll();
@@ -132,7 +138,7 @@ public class FirstActivity extends Activity implements View.OnClickListener{
                 final AlertDialog.Builder builder=new AlertDialog.Builder(this);
                 builder.setTitle("自定义");
                 my_input=new EditText(builder.getContext());
-                my_input.setHint("输入20-60之间的数字");
+                my_input.setHint("输入"+plandaysmin+"-"+plandaysmax+"之间的数字");
                 my_input.setBackgroundResource(R.drawable.word_plan_input_bg);
                 my_input.setBackgroundColor(getResources().getColor(R.color.gray_white));
                 my_input.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -163,11 +169,11 @@ public class FirstActivity extends Activity implements View.OnClickListener{
                             new MyToast(getApplicationContext(),MyToast.EMPTY).show();
                         }else{
                             int input_plan_num=Integer.parseInt(input_plan);
-                            if(input_plan_num<20||input_plan_num>60){
+                            if(input_plan_num<plandaysmin||input_plan_num>plandaysmax){
                                 unSelectedAll();
                                 item_3.setBackgroundResource(R.drawable.selected_word_plan_shape_button);
                                 item_3.setTextColor(Color.parseColor("#000000"));
-                                new MyToast(getApplicationContext(),MyToast.NUMBER_RANGE).show();
+                                new MyToast(getApplicationContext(),"输入"+plandaysmin+"-"+plandaysmax+"之间的数字").show();
                             }else{
                                 item_my.setText(input_plan+"天");
                             }

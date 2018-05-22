@@ -39,7 +39,7 @@
                     android:textColor="@color/fontWhite"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:text="20天"/>
+                    android:text="30天"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -55,7 +55,7 @@
                     android:textColor="@color/fontWhite"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:text="25天"/>
+                    android:text="35天"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -71,7 +71,7 @@
                     android:textColor="@color/fontBlack"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:text="30天"/>
+                    android:text="40天"/>
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
@@ -92,7 +92,7 @@
                     android:textColor="@color/fontWhite"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:text="35天"/>
+                    android:text="45天"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -108,7 +108,7 @@
                     android:textSize="20sp"
                     android:textColor="@color/fontWhite"
                     android:textStyle="bold"
-                    android:text="40天"/>
+                    android:text="50天"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -130,7 +130,7 @@
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp">
+        android:layout_height="match_parent">
         <Button
             android:id="@+id/init_word_plan_button"
             android:layout_width="match_parent"

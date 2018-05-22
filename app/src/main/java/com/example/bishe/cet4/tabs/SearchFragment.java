@@ -234,7 +234,7 @@ public class SearchFragment extends Fragment implements SearchHistorySimpleAdapt
 
     private Boolean isLocatedSearch(String str){
         char n=str.charAt(0);
-        if((n>='0'&&n<='9')||(n>='a'&&n<='z')||(n>='A'&&n<='Z')||n=='①'||n=='②'||n=='Ⅱ'||n=='α'||n=='β'||n=='γ'||n=='δ'||n=='ε'||n=='λ'){
+        if((n>='A'&&n<='Z')||(n>='a'&&n<='z')){
             return true;
         }else{
             return false;

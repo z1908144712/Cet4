@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -28,18 +27,6 @@ import com.example.bishe.cet4.function.NetWork;
 import com.example.bishe.cet4.function.WordTimer;
 import com.example.bishe.cet4.object.Question;
 import com.example.bishe.cet4.object.Word;
-import com.example.bishe.cet4.tabs.TestFragment;
-import com.youdao.sdk.app.Language;
-import com.youdao.sdk.app.LanguageUtils;
-import com.youdao.sdk.common.Constants;
-import com.youdao.sdk.ydonlinetranslate.SpeechTranslateParameters;
-import com.youdao.sdk.ydonlinetranslate.Translator;
-import com.youdao.sdk.ydtranslate.Translate;
-import com.youdao.sdk.ydtranslate.TranslateErrorCode;
-import com.youdao.sdk.ydtranslate.TranslateListener;
-import com.youdao.sdk.ydtranslate.TranslateParameters;
-
-import java.util.List;
 
 
 public class WordActivity extends Activity implements View.OnClickListener{
@@ -137,7 +124,11 @@ public class WordActivity extends Activity implements View.OnClickListener{
             word_index=0;
             progressBar.setMax(words_num);
         }else if(mode==MODE_3){
-
+            day=getIntent().getIntExtra("day",-1);
+            words_index_array=getIntent().getStringExtra("words").split(",");
+            words_num=words_index_array.length;
+            word_index=0;
+            progressBar.setMax(words_num);
         }else{
             finish();
         }
@@ -206,7 +197,7 @@ public class WordActivity extends Activity implements View.OnClickListener{
                             tv_type1.setOnClickListener(new WordActivity.TypeOnClickListener());
                             tv_type2.setOnClickListener(new WordActivity.TypeOnClickListener());
                             tv_type3.setOnClickListener(new WordActivity.TypeOnClickListener());
-                            new AlertDialog.Builder(getApplicationContext())
+                            new AlertDialog.Builder(WordActivity.this)
                                     .setView(view)
                                     .create().show();
                         }
@@ -233,7 +224,7 @@ public class WordActivity extends Activity implements View.OnClickListener{
 
 
     private void setUnknownWord(){
-        dbHelper.addWrongNumWordCollection(word.getId(),word.getEnglish());
+        dbHelper.addWrongNumWordCollection(word.getId(),word.getEnglish(),day);
     }
 
     private void setLearnedTime(){
@@ -348,6 +339,10 @@ public class WordActivity extends Activity implements View.OnClickListener{
         Intent intent=new Intent();
         intent.putExtra("id",day);
         intent.putExtra("type",type);
+        if(mode==MODE_3){
+            intent.putExtra("mode",mode);
+            intent.putExtra("words",words_index_array);
+        }
         intent.setClass(WordActivity.this,TestActivity.class);
         startActivity(intent);
         finish();

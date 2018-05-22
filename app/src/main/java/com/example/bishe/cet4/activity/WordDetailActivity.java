@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -27,20 +30,31 @@ import com.youdao.sdk.ydtranslate.Translate;
 import com.youdao.sdk.ydtranslate.TranslateErrorCode;
 import com.youdao.sdk.ydtranslate.TranslateListener;
 import com.youdao.sdk.ydtranslate.TranslateParameters;
+import com.zyao89.view.zloading.ZLoadingView;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class WordDetailActivity extends Activity {
+import cn.bmob.v3.b.V;
+
+public class WordDetailActivity extends Activity implements View.OnClickListener{
     private WebView webView=null;
     private Language languageFrom=null;
     private Language languageTo=null;
     private TranslateParameters translateParameters=null;
     private Translator translator=null;
     private Handler handler=null;
+    private Handler handler_timer=null;
+    private Timer timer=null;
+    private TimerTask timerTask=null;
     private String keyword =null;
     private ProgressBar progressBar=null;
+    private View loadingView=null;
+    private View timeoutView=null;
     private int type;
     private int type_show;
+    private String weburl=null;
     public static final int TYPE_ENGLISH=0;
     public static final int TYPE_CHINESE=1;
     public static final int TYPE_AUTO=2;
@@ -58,6 +72,9 @@ public class WordDetailActivity extends Activity {
     }
 
     private void initViews(){
+        loadingView=findViewById(R.id.id_loading);
+        timeoutView=findViewById(R.id.id_timeout);
+        timeoutView.setOnClickListener(this);
         webView=findViewById(R.id.id_web_view);
         progressBar=findViewById(R.id.id_progressBar);
     }
@@ -96,15 +113,27 @@ public class WordDetailActivity extends Activity {
         }
         translateParameters=new TranslateParameters.Builder()
                 .source("youdao")
-                .timeout(3000)
+                .timeout(5000)
                 .from(languageFrom)
                 .to(languageTo)
                 .build();
         translator=Translator.getInstance(translateParameters);
         handler=new Handler();
+        handler_timer=new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what){
+                    case 0:
+                        timeout();
+                        break;
+                }
+                super.handleMessage(msg);
+            }
+        };
         translator.lookup(keyword, "requestId", new TranslateListener() {
             @Override
             public void onError(TranslateErrorCode translateErrorCode, String s) {
+                handler_timer.sendEmptyMessage(0);
                 System.out.println(translateErrorCode.name());
             }
 
@@ -120,6 +149,33 @@ public class WordDetailActivity extends Activity {
                                 view.loadUrl(url);
                                 return true;
                             }
+
+                            @Override
+                            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                                weburl=url;
+                                timer=new Timer();
+                                timerTask=new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        timer.cancel();
+                                        timer.purge();
+                                        handler_timer.sendEmptyMessage(0);
+                                    }
+                                };
+                                timer.schedule(timerTask,10000,1);
+                            }
+
+                            @Override
+                            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                                handler_timer.sendEmptyMessage(0);
+                                System.out.println(errorResponse.getStatusCode());
+                            }
+
+                            @Override
+                            public void onPageFinished(WebView view, String url) {
+                                timer.cancel();
+                                timer.purge();
+                            }
                         });
                         webView.setWebChromeClient(new WebChromeClient(){
                             @Override
@@ -129,30 +185,12 @@ public class WordDetailActivity extends Activity {
                                 if(type_show==TYPE_WORD){
                                     view.loadUrl(JSFilter.jsfilter_word);
                                 }
+                                System.out.println(newProgress);
                                 if(newProgress==100){
-                                    webView.setVisibility(View.VISIBLE);
-                                    progressBar.setVisibility(View.INVISIBLE);
+                                    loadsuccess();
                                 }else{
-                                    webView.setVisibility(View.INVISIBLE);
-                                    progressBar.setVisibility(View.VISIBLE);
-                                    progressBar.setProgress(newProgress);
+                                    loading();
                                 }
-                            }
-
-                            @Override
-                            public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
-                                new AlertDialog.Builder(WordDetailActivity.this)
-                                        .setTitle("Alert")
-                                        .setMessage(message)
-                                        .setCancelable(false)
-                                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                result.confirm();
-                                            }
-                                        })
-                                        .create().show();
-                                return true;
                             }
                         });
                         webView.loadUrl(translate.getDeeplink());
@@ -165,5 +203,61 @@ public class WordDetailActivity extends Activity {
 
             }
         });
+    }
+
+    private void loadsuccess(){
+        System.out.println(webView.getVisibility());
+        if(webView.getVisibility()==View.GONE){
+            webView.setVisibility(View.VISIBLE);
+        }
+        if(loadingView.getVisibility()==View.VISIBLE){
+            loadingView.setVisibility(View.GONE);
+        }
+        if(progressBar.getVisibility()==View.VISIBLE){
+            progressBar.setVisibility(View.GONE);
+        }
+        if(timeoutView.getVisibility()==View.VISIBLE){
+            timeoutView.setVisibility(View.GONE);
+        }
+    }
+
+    private void timeout(){
+        if(timeoutView.getVisibility()==View.GONE){
+            timeoutView.setVisibility(View.VISIBLE);
+        }
+        if(progressBar.getVisibility()==View.VISIBLE){
+            progressBar.setVisibility(View.GONE);
+        }
+        if(webView.getVisibility()== View.VISIBLE){
+            webView.setVisibility(View.GONE);
+        }
+        if(loadingView.getVisibility()==View.VISIBLE){
+            loadingView.setVisibility(View.GONE);
+        }
+    }
+
+    private void loading(){
+        if(timeoutView.getVisibility()==View.VISIBLE){
+            timeoutView.setVisibility(View.GONE);
+        }
+        if(progressBar.getVisibility()==View.GONE){
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        if(webView.getVisibility()==View.VISIBLE){
+            webView.setVisibility(View.GONE);
+        }
+        if(loadingView.getVisibility()==View.GONE){
+            loadingView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.id_timeout:
+                loading();
+                webView.loadUrl(weburl);
+                break;
+        }
     }
 }

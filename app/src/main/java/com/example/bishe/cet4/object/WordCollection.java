@@ -7,11 +7,21 @@ public class WordCollection{
     private Integer id;
     private String english;
     private Integer wrong_num;
+    private Integer belongto;
 
-    public WordCollection(Integer id,String english, Integer wrong_num) {
+    public WordCollection(Integer id,String english, Integer wrong_num,Integer belongto) {
         this.id=id;
         this.english = english;
         this.wrong_num = wrong_num;
+        this.belongto=belongto;
+    }
+
+    public Integer getBelongto() {
+        return belongto;
+    }
+
+    public void setBelongto(Integer belongto) {
+        this.belongto = belongto;
     }
 
     public Integer getId() {
@@ -43,9 +53,10 @@ public class WordCollection{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WordCollection that = (WordCollection) o;
-        return id==that.id&&
+        return id.equals(that.id)&&
                 english.equals(that.english) &&
-                wrong_num.equals(that.wrong_num);
+                wrong_num.equals(that.wrong_num)&&
+                belongto.equals(that.belongto);
     }
 
     @Override

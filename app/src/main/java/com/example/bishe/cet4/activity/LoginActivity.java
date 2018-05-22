@@ -188,6 +188,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                     zLoadingDialog.show();
+                                                                    userData_now.setObjectId(userData.getObjectId());
                                                                     userData_now.setSynctime(new BmobDate(new Date()));
                                                                     userData_now.update(new UpdateListener() {
                                                                         @Override
@@ -265,7 +266,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                     }else{
                         handler.sendEmptyMessage(0);
                         if(e==null){
-                            new MyToast(LoginActivity.this,MyToast.ACCOUNT_ERROR);
+                            new MyToast(LoginActivity.this,MyToast.ACCOUNT_ERROR).show();
                         }else{
                             new MyToast(LoginActivity.this,e.getErrorCode()).show();
                         }

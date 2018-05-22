@@ -13,14 +13,42 @@ public class Word extends BmobObject{
     private String english;
     private String chinese;
     private String phonetic;
-    private String example;
+    private String main_chinese;
+    private String us_phonetic;
+    private String uk_phonetic;
 
-    public Word(Integer id, String english, String chinese, String phonetic, String example) {
+    public Word(Integer id, String english, String chinese, String phonetic, String main_chinese, String us_phonetic, String uk_phonetic) {
         this.id = id;
         this.english = english;
         this.chinese = chinese;
         this.phonetic = phonetic;
-        this.example = example;
+        this.main_chinese = main_chinese;
+        this.us_phonetic = us_phonetic;
+        this.uk_phonetic = uk_phonetic;
+    }
+
+    public String getMain_chinese() {
+        return main_chinese;
+    }
+
+    public void setMain_chinese(String main_chinese) {
+        this.main_chinese = main_chinese;
+    }
+
+    public String getUs_phonetic() {
+        return us_phonetic;
+    }
+
+    public void setUs_phonetic(String us_phonetic) {
+        this.us_phonetic = us_phonetic;
+    }
+
+    public String getUk_phonetic() {
+        return uk_phonetic;
+    }
+
+    public void setUk_phonetic(String uk_phonetic) {
+        this.uk_phonetic = uk_phonetic;
     }
 
     public Integer getId() {
@@ -55,30 +83,24 @@ public class Word extends BmobObject{
         this.phonetic = phonetic;
     }
 
-    public String getExample() {
-        return example;
-    }
-
-    public void setExample(String example) {
-        this.example = example;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Word word = (Word) o;
-        return id==word.id &&
+        return  id.equals(word.id) &&
                 english.equals(word.english) &&
                 chinese.equals(word.chinese) &&
                 phonetic.equals(word.phonetic) &&
-                example.equals(word.example);
+                main_chinese.equals(word.main_chinese)&&
+                uk_phonetic.equals(word.uk_phonetic)&&
+                us_phonetic.equals(word.us_phonetic);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, english, chinese, phonetic, example);
+        return Objects.hash(id, english, chinese, phonetic);
     }
 
     @Override
@@ -88,7 +110,6 @@ public class Word extends BmobObject{
                 ", english='" + english + '\'' +
                 ", chinese='" + chinese + '\'' +
                 ", phonetic='" + phonetic + '\'' +
-                ", example='" + example + '\'' +
                 '}';
     }
 }

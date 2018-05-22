@@ -1,5 +1,6 @@
 package com.example.bishe.cet4;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
@@ -16,8 +17,11 @@ import android.widget.TextView;
 import com.example.bishe.cet4.tabs.ReviewFragment;
 import com.example.bishe.cet4.tabs.PersonalFragment;
 import com.example.bishe.cet4.tabs.SearchFragment;
+import com.example.bishe.cet4.fragment.TestFragmentOne;
 import com.example.bishe.cet4.tabs.TestFragment;
 import com.example.bishe.cet4.tabs.WordFragment;
+
+import java.util.Date;
 
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener {
@@ -73,8 +77,25 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
 
     private boolean isLogin(){
-        SharedPreferences sharedPreferences=getSharedPreferences("login",MODE_PRIVATE);
-        return sharedPreferences.getBoolean("isLogin",false);
+        SharedPreferences sharedPreferences=getSharedPreferences("login", Context.MODE_PRIVATE);
+        long login_time=sharedPreferences.getLong("login_time",-1);
+        boolean isLogin=sharedPreferences.getBoolean("isLogin",false);
+        if(login_time==-1||isLogin==false){
+            return false;
+        }else{
+            Date date=new Date();
+            if(date.getTime()-login_time>24*60*60*1000){
+                SharedPreferences.Editor editor=sharedPreferences.edit();
+                editor.putString("username",null);
+                editor.putLong("login_time",-1);
+                editor.putBoolean("isLogin",false);
+                editor.putString("user_id",null);
+                editor.commit();
+                return false;
+            }else{
+                return true;
+            }
+        }
     }
 
     private void initViews(){

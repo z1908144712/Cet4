@@ -12,7 +12,7 @@
         android:text="复习"
         android:gravity="center"
         android:layout_height="50dp" />
-    <include layout="@layout/review_tab_top_layout"/>
+    <include layout="@layout/activity_tab_review_top_layout"/>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"

@@ -33,6 +33,7 @@ import com.example.bishe.cet4.activity.WordCollectionActivity;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 import com.example.bishe.cet4.function.MyToast;
+import com.example.bishe.cet4.object.WordPlanNum;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,8 +87,8 @@ public class PersonalFragment extends Fragment implements AdapterView.OnItemClic
         learneddays=dbHelper.selectCountFromWordsPlan();
         learned_words_num=dbHelper.select_learned_words_num();
         last_words_num=words_count-learned_words_num;
-        plandays_min=(last_words_num%50==0?last_words_num/50:(last_words_num/50+1))+learneddays;
-        plandays_max=(last_words_num%16==0?last_words_num/16:(last_words_num/16+1))+learneddays;
+        plandays_min=(last_words_num% WordPlanNum.max==0?last_words_num/WordPlanNum.max:(last_words_num/WordPlanNum.max+1))+learneddays;
+        plandays_max=(last_words_num%WordPlanNum.min==0?last_words_num/WordPlanNum.min:(last_words_num/WordPlanNum.min+1))+learneddays;
         personal_items=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
         map.put("icon",R.drawable.ic_assignment_turned);

@@ -10,8 +10,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.example.bishe.cet4.MainActivity;
 import com.example.bishe.cet4.database.AssetsDatabaseManager;
 import com.example.bishe.cet4.database.DBHelper;
 import com.example.bishe.cet4.function.MyTimerTask;
@@ -65,6 +67,7 @@ public class SyncService extends Service {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        bmobWords=new ArrayList<>();
                         getBmobWords();
                     }
                 }).start();
@@ -116,7 +119,6 @@ public class SyncService extends Service {
         if(words.size()!=bmobWords.size()){
             checkAdd();
         }
-        System.out.println(changeWords.size());
         if(changeWords.size()>0||(addWords!=null&&addWords.size()>0)){
             if(changeWords.size()>0){
                 updateInfo+="更新的单词：\n";
@@ -124,13 +126,13 @@ public class SyncService extends Service {
                     updateInfo+=changeWords.get(i).getEnglish()+"\n";
                 }
             }
-            if(addWords.size()>0){
+            if(addWords!=null&&addWords.size()>0){
                 updateInfo+="新增的单词：\n";
                 for(int i=0;i<addWords.size();i++){
                     updateInfo+=addWords.get(i).getEnglish()+"\n";
                 }
             }
-            new AlertDialog.Builder(getApplicationContext())
+            AlertDialog.Builder builder=new AlertDialog.Builder(this)
                     .setCancelable(false)
                     .setTitle("单词库更新")
                     .setMessage(updateInfo)
@@ -138,33 +140,60 @@ public class SyncService extends Service {
                     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(changeWords.size()>0){
+                                        for(int i=0;i<changeWords.size();i++){
+                                            dbHelper.updateWord(changeWords.get(i));
+                                            dbHelper.updateTestQuestion(changeWords.get(i));
+                                        }
+                                    }
+                                    if(addWords!=null&&addWords.size()>0){
+                                        for(int i=0;i<addWords.size();i++){
+                                            dbHelper.insertWord(addWords.get(i));
+                                            dbHelper.insertWord(addWords.get(i));
+                                            updateWordPlan();
+                                        }
+                                    }
+                                }
+                            }).start();
                         }
-                    })
-                    .create().show();
+                    });
+            AlertDialog alertDialog=builder.create();
+            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+            alertDialog.show();
+        }
+    }
+
+    private void updateWordPlan(){
+        int words_count=dbHelper.selectCountFromWords();
+        SharedPreferences sharedPreferences=getSharedPreferences("plandays",MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        int plandays=sharedPreferences.getInt("plandays",-1);
+        int plannum=sharedPreferences.getInt("plannum",-1);
+        int old_max_num=plandays*plannum;
+        if (old_max_num<words_count){
+            int days=words_count%plannum==0?words_count/plannum:(words_count/plannum)+1;
+            editor.putInt("plandays",days);
+            editor.commit();
         }
     }
 
     private void checkChange(){
         changeWords=new ArrayList<>();
-        System.out.println(words.size());
-        System.out.println(bmobWords.size());
         Word word1,word2;
         for(int i=0;i<words.size();i++){
             word1=words.get(i);
-//            System.out.println("============="+i);
             for(int j=0;j<bmobWords.size();j++){
                 word2=bmobWords.get(j);
-//                System.out.println(j);
-                System.out.println(bmobWords.size());
-                System.out.println(word1.getEnglish()+"->"+word2.getEnglish()+"->"+word1.equals(word2));
-                if(word1.getId()==word2.getId()){
-
+                if(word1.getId().equals(word2.getId())){
                     if(!word1.equals(word2)){
                         changeWords.add(word2);
                     }
                     break;
                 }
+
             }
         }
     }
@@ -174,7 +203,7 @@ public class SyncService extends Service {
         for(int i=0;i<bmobWords.size();i++){
             boolean isExist=false;
             for(int j=0;j<words.size();j++){
-                if(bmobWords.get(i).getId()==words.get(j).getId()){
+                if(bmobWords.get(i).getId().equals(words.get(j).getId())){
                     isExist=true;
                     break;
                 }
@@ -198,13 +227,13 @@ public class SyncService extends Service {
                         for(int i=0;i<list.size();i++){
                             bmobWords.add(list.get(i));
                         }
-                        System.out.println(skip_num);
                         getBmobWords();
                     }else{
                         handler.sendEmptyMessage(2);
                         return;
                     }
                 }else {
+                    System.out.println(e.getMessage());
                     new MyToast(getApplicationContext(),e.getErrorCode()).show();
                     return;
                 }

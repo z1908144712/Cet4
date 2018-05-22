@@ -2,6 +2,8 @@ package com.example.bishe.cet4.database;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 import com.example.bishe.cet4.object.UserData;
@@ -11,10 +13,12 @@ import com.example.bishe.cet4.object.WordPlan;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by Skywilling on 2018/1/3.
@@ -33,7 +37,7 @@ public class DBHelper {
         Cursor cursor=db.rawQuery("select * from words",null);
         List<Word> words=new ArrayList<>();
         while(cursor.moveToNext()){
-            words.add(new Word(cursor.getInt(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4)));
+            words.add(new Word(cursor.getInt(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getString(6)));
         }
         cursor.close();
         return words;
@@ -53,7 +57,7 @@ public class DBHelper {
         Word word=null;
         Cursor cursor=db.rawQuery("select * from words where id= ? ",new String[]{id});
         if(cursor.moveToNext()){
-            word=new Word(cursor.getInt(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4));
+            word=new Word(cursor.getInt(0),cursor.getString(1),cursor.getString(2),cursor.getString(3),cursor.getString(4),cursor.getString(5),cursor.getString(6));
         }
         cursor.close();
         return word;
@@ -83,9 +87,53 @@ public class DBHelper {
         return id;
     }
 
+    public void updateWord(Word word){
+       Word word1=selectWordById(word.getId().toString());
+       if(!word1.getChinese().equals(word.getChinese())){
+           db.execSQL("update words set chinese=? where id=?",new Object[]{word.getChinese(),word.getId()});
+       }
+       if(!word1.getEnglish().equals(word.getEnglish())){
+           db.execSQL("update words set english=? where id=?",new Object[]{word.getEnglish(),word.getId()});
+       }
+       if(!word1.getPhonetic().equals(word.getPhonetic())){
+           db.execSQL("update words set phonetic=? where id=?",new Object[]{word.getPhonetic(),word.getId()});
+       }
+       if(!word1.getMain_chinese().equals(word.getMain_chinese())){
+           db.execSQL("update words set main_chinese=? where id=?",new Object[]{word.getMain_chinese(),word.getId()});
+       }
+        if(!word1.getUk_phonetic().equals(word.getUk_phonetic())){
+            db.execSQL("update words set uk_phonetic=? where id=?",new Object[]{word.getUk_phonetic(),word.getId()});
+        }
+        if(!word1.getUs_phonetic().equals(word.getUs_phonetic())){
+            db.execSQL("update words set us_phonetic=? where id=?",new Object[]{word.getUs_phonetic(),word.getId()});
+        }
+    }
+
+    public void insertWord(Word word){
+        Word word1=selectWordById(String.valueOf(word.getId()));
+        if(word1==null){
+            db.execSQL("insert into words(id,english,chinese,phonetic,main_chinese,us_phonetic,uk_phonetic) values(?,?,?,?,?,?,?)",new Object[]{word.getId(),word.getEnglish(),word.getChinese(),word.getPhonetic(),word.getMain_chinese(),word.getUs_phonetic(),word.getUk_phonetic()});
+        }else{
+            updateWord(word);
+        }
+    }
+
     /**
      * test_question
      * */
+
+    public int selectCountFromTestQuestion(){
+        int num;
+        Cursor cursor=db.rawQuery("select count(*) from test_question",null);
+        if(cursor.moveToNext()){
+            num=cursor.getInt(0);
+        }else {
+            num=0;
+        }
+        cursor.close();
+        return num;
+    }
+
     public String selectChineseById(int id){
         Cursor cursor=db.rawQuery("select num from test_question where id=?",new String[]{String.valueOf(id)});
         int num;
@@ -117,6 +165,179 @@ public class DBHelper {
         }
         cursor.close();
         return id;
+    }
+
+    public void updateTestQuestion(Word word){
+        String english=word.getEnglish();
+        String answers[]=word.getChinese().split("#");
+        int num=answers.length;
+        String old_answers[]=null;
+        int old_num;
+        Cursor cursor=db.rawQuery("select * from test_question where question=?",new String[]{english});
+        if (cursor.moveToNext()){
+            old_num=cursor.getInt(2);
+            old_answers=new String[old_num];
+            for(int i=0;i<old_num;i++){
+                old_answers[i]=cursor.getString(3+i);
+            }
+        }else {
+            old_num=0;
+        }
+        cursor.close();
+//        System.out.println("old_num="+old_num+" num"+num);
+        if(old_answers!=null&&old_num!=0){
+            if(old_num>num){
+                for(int i=0;i<num;i++){
+                    if(!old_answers[i].equals(answers[i])){
+                        switch (i){
+                            case 0:
+                                db.execSQL("update test_question set answer1=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 1:
+                                db.execSQL("update test_question set answer2=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 2:
+                                db.execSQL("update test_question set answer3=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 3:
+                                db.execSQL("update test_question set answer4=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 4:
+                                db.execSQL("update test_question set answer5=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 5:
+                                db.execSQL("update test_question set answer6=? where question=?",new Object[]{answers[i],english});
+                                break;
+                        }
+                    }
+                }
+                for(int i=num-1;i<old_num;i++){
+                    switch (i){
+                        case 0:
+                            db.execSQL("update test_question set answer1=? where question=?",new Object[]{null,english});
+                            break;
+                        case 1:
+                            db.execSQL("update test_question set answer2=? where question=?",new Object[]{null,english});
+                            break;
+                        case 2:
+                            db.execSQL("update test_question set answer3=? where question=?",new Object[]{null,english});
+                            break;
+                        case 3:
+                            db.execSQL("update test_question set answer4=? where question=?",new Object[]{null,english});
+                            break;
+                        case 4:
+                            db.execSQL("update test_question set answer5=? where question=?",new Object[]{null,english});
+                            break;
+                        case 5:
+                            db.execSQL("update test_question set answer6=? where question=?",new Object[]{null,english});
+                            break;
+                    }
+                }
+            }else if(old_num==num){
+                for(int i=0;i<num;i++){
+                    if(!old_answers[i].equals(answers[i])){
+                        switch (i){
+                            case 0:
+                                db.execSQL("update test_question set answer1=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 1:
+                                db.execSQL("update test_question set answer2=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 2:
+                                db.execSQL("update test_question set answer3=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 3:
+                                db.execSQL("update test_question set answer4=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 4:
+                                db.execSQL("update test_question set answer5=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 5:
+                                db.execSQL("update test_question set answer6=? where question=?",new Object[]{answers[i],english});
+                                break;
+                        }
+                    }
+                }
+            }else{
+                for(int i=0;i<old_num;i++){
+                    if(!old_answers[i].equals(answers[i])){
+                        switch (i){
+                            case 0:
+                                db.execSQL("update test_question set answer1=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 1:
+                                db.execSQL("update test_question set answer2=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 2:
+                                db.execSQL("update test_question set answer3=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 3:
+                                db.execSQL("update test_question set answer4=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 4:
+                                db.execSQL("update test_question set answer5=? where question=?",new Object[]{answers[i],english});
+                                break;
+                            case 5:
+                                db.execSQL("update test_question set answer6=? where question=?",new Object[]{answers[i],english});
+                                break;
+                        }
+                    }
+                }
+                for(int i=old_num-1;i<num;i++){
+                    switch (i){
+                        case 0:
+                            db.execSQL("update test_question set answer1=? where question=?",new Object[]{answers[i],english});
+                            break;
+                        case 1:
+                            db.execSQL("update test_question set answer2=? where question=?",new Object[]{answers[i],english});
+                            break;
+                        case 2:
+                            db.execSQL("update test_question set answer3=? where question=?",new Object[]{answers[i],english});
+                            break;
+                        case 3:
+                            db.execSQL("update test_question set answer4=? where question=?",new Object[]{answers[i],english});
+                            break;
+                        case 4:
+                            db.execSQL("update test_question set answer5=? where question=?",new Object[]{answers[i],english});
+                            break;
+                        case 5:
+                            db.execSQL("update test_question set answer6=? where question=?",new Object[]{answers[i],english});
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    public void insertTestQuestion(Word word){
+        String english=word.getEnglish();
+        String answers[]=word.getChinese().split("#");
+        int num=answers.length;
+        int id=selectCountFromTestQuestion();
+        switch (num){
+            case 0:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,null,null,null,null,null,null});
+                break;
+            case 1:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,answers[0],null,null,null,null,null});
+                break;
+            case 2:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,answers[0],answers[1],null,null,null,null});
+                break;
+            case 3:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,answers[0],answers[1],answers[2],null,null,null});
+                break;
+            case 4:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,answers[0],answers[1],answers[2],answers[3],null,null});
+                break;
+            case 5:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,answers[0],answers[1],answers[2],answers[3],answers[4],null});
+                break;
+            case 6:
+                db.execSQL("insert into test_question(id,question,num,answer1,answer2,answer3,answer4,answer5,answer6) values(?,?,?,?,?,?,?,?,?)",new Object[]{id,english,num,answers[0],answers[1],answers[2],answers[3],answers[4],answers[5]});
+                break;
+        }
+
     }
     /**
      * words_plan
@@ -210,6 +431,18 @@ public class DBHelper {
         return res;
     }
 
+    public String select_time_from_words_plan_by_id(int id){
+        Cursor cursor=db.rawQuery("select time from words_plan where id=?",new String[]{String.valueOf(id)});
+        String time;
+        if(cursor.moveToNext()){
+            time=cursor.getString(0);
+        }else{
+            time=null;
+        }
+        cursor.close();
+        return time;
+    }
+
     public String selectAllLearnWordNum(){
         String words_num_str="";
         Cursor cursor=db.rawQuery("select words_num from words_plan",null);
@@ -296,7 +529,7 @@ public class DBHelper {
 
     public boolean isExistWordCollection(String english){
         Cursor cursor=db.rawQuery("select * from word_collection where english=?",new String[]{english});
-        boolean isExist=false;
+        boolean isExist;
         if(cursor.moveToNext()){
             isExist=true;
         }else{
@@ -306,13 +539,13 @@ public class DBHelper {
         return isExist;
     }
 
-    public void addWrongNumWordCollection(int id,String english){
+    public void addWrongNumWordCollection(int id,String english,int belongto){
         if(isExistWordCollection(english)){
             int wrong_num=getWrongNumWordCollection(english);
             wrong_num++;
             db.execSQL("update word_collection set wrong_num=? where english=?",new Object[]{wrong_num,english});
         }else{
-            insertIntoWordCollection(id,english);
+            insertIntoWordCollection(id,english,belongto);
         }
 
     }
@@ -331,19 +564,19 @@ public class DBHelper {
         db.execSQL("update word_collection set wrong_num=? where english=?",new Object[]{wrong_num,english});
     }
 
-    public void insertIntoWordCollection(int id,String english){
-        db.execSQL("insert into word_collection(english,wrong_num) values(?,?,?)",new Object[]{id,english,1});
+    public void insertIntoWordCollection(int id,String english,int belongto){
+        db.execSQL("insert into word_collection(id,english,wrong_num,belongto) values(?,?,?,?)",new Object[]{id,english,1,belongto});
     }
 
     public void insertIntoWordCollection(WordCollection wordCollection){
-        db.execSQL("insert into word_collection(english,wrong_num) values(?,?,?)",new Object[]{wordCollection.getId(),wordCollection.getEnglish(),wordCollection.getWrong_num()});
+        db.execSQL("insert into word_collection(id,english,wrong_num,belongto) values(?,?,?,?)",new Object[]{wordCollection.getId(),wordCollection.getEnglish(),wordCollection.getWrong_num(),wordCollection.getBelongto()});
     }
 
     public List<WordCollection> getAll_Word_WordCollection(){
         Cursor cursor=db.rawQuery("select * from word_collection",null);
         List<WordCollection> wordList=new ArrayList<>();
         while(cursor.moveToNext()){
-            wordList.add(new WordCollection(cursor.getInt(0),cursor.getString(1),cursor.getInt(2)));
+            wordList.add(new WordCollection(cursor.getInt(0),cursor.getString(1),cursor.getInt(2),cursor.getInt(3)));
         }
         cursor.close();
         return wordList;
@@ -357,6 +590,25 @@ public class DBHelper {
             WordCollection wordCollection=gson.fromJson(gson.toJson(wordCollections.get(i)),WordCollection.class);
             insertIntoWordCollection(wordCollection);
         }
+    }
+
+    public Map<String,Object> select_words_and_count_from_collection_word_by_belongto(int belongto){
+        Map<String,Object> map=null;
+        Cursor cursor=db.rawQuery("select * from word_collection where belongto=?",new String[]{String.valueOf(belongto)});
+        String num="";
+        String ids="";
+        while (cursor.moveToNext()){
+            ids+=cursor.getString(0)+",";
+            num+=cursor.getString(1)+" ";
+        }
+        if(num.length()>0){
+            map=new HashMap<>();
+            map.put("day",belongto);
+            map.put("num",num);
+            map.put("words",ids);
+        }
+        cursor.close();
+        return map;
     }
     /**
     * 获取UserData
